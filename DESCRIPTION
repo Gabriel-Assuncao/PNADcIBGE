@@ -1,0 +1,22 @@
+Package: PNADcIBGE
+Type: Package
+Title: Downloading, Reading and Analysing PNADc Microdata
+Version: 0.2.0
+Authors@R: person("Douglas", "Braga", email = "douglas.braga@ibge.gov.br",
+                  role = c("aut", "cre"))
+Description: Provides tools for download, read, and analyse the PNADc
+	household survey from Brazilian Institute of Geography and Statistics.
+	The data must be downloaded from the official website <https://www.ibge.gov.br/>. 
+	Further analyses must be made using package 'survey'.
+Depends: R (>= 3.2.0)
+Imports: magrittr, survey, readr, dplyr, RCurl, utils, timeDate, readxl
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+NeedsCompilation: no
+Packaged: 2017-10-10 18:28:21 UTC; douglas.braga
+Author: Douglas Braga [aut, cre]
+Maintainer: Douglas Braga <douglas.braga@ibge.gov.br>
+Repository: CRAN
+Date/Publication: 2017-10-10 18:52:50 UTC

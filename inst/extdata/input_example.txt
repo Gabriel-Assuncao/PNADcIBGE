@@ -1,0 +1,19 @@
+/* PROGRAMA DE LEITURA EM SAS DO ARQUIVO DE MICRODADOS DA PNAD CONTÍNUA */
+
+/* Obs.1: As duas primeiras posições da UPA (Unidade Primária de Amostragem) são o código da UF (Unidade da Federação)
+
+   Obs.2: Ajuste o endereço do arquivo \PNADC_xxxx.txt no comando INFILE */
+
+
+data pnadc_xxxxxx;
+infile "...\Dados\PNADC_xxxxxx.txt" lrecl=399 Missover;
+input
+@0001 UPA      $9.    /* Unidade Primária de Amostragem    */
+@0010 Estrato      $7.    /* Estrato                           */
+@0017 V1027       15.8    /* Peso SEM pós estratificação       */
+@0032 V1029       9.    /* Projeção da população             */
+@0041 posest      $3.    /* Domínios de projeção              */
+@0044 VD4002      $1.    /* Condição de ocupação              */
+
+;
+run;

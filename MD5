@@ -1,0 +1,15 @@
+416e442345461811f283531e1ea8d3a1 *DESCRIPTION
+27180a3f705b1bb2e7d4eaa2add96a70 *NAMESPACE
+4c7cd59a64b9dc0be9ecd6e41faabe9c *R/example.R
+bc020366d166f7c29efc7484159ee1d5 *R/get_pnadc.R
+0c74cdae1b50715c74a029df5b0870a9 *R/pnadc_design.R
+4e79cc160ade39ce20e0adc4c05232ed *R/pnadc_labeller.R
+3a7ce1d8fc3323b63758273f4f12c50d *R/read_pnadc.R
+47c613ced8470112169b36b9637aea25 *inst/extdata/dictionaryexample.xls
+cf2ff1b820b6468c463900c134eba1b0 *inst/extdata/exampledata.txt
+837791e77e6ed57d18d26ece55a0d122 *inst/extdata/input_example.txt
+ad405f21373db6e64e2912463e3939b5 *man/get_pnadc.Rd
+f55689957a612adceabe5042e66418bd *man/pnadc_design.Rd
+c0c354728b3d76f77f09cfaa784dfa70 *man/pnadc_example.Rd
+3d4dc612792bbd138793f4fa7f66e625 *man/pnadc_labeller.Rd
+305824c766c83769b736ce0de741b55b *man/read_pnadc.Rd
