@@ -26,7 +26,7 @@ read_pnadc <- function(microdata,input_txt,vars=NULL) {
       missvar=vars[!(vars %in% input$X2)]
       warning(paste("Variables", paste(missvar,collapse = ", "), "not present in dataset\n"))
       }
-    input %<>% subset(X2 %in% c("UPA","Estrato","V1027","posest","V1029",vars))
+    input %<>% subset(X2 %in% c("UPA","Estrato","V1027","posest","V1029","V1031","V1030",vars))
   }
   columns <- input%$%
     readr::fwf_positions(start,end,X2)

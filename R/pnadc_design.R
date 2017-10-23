@@ -27,19 +27,38 @@
 
 pnadc_design <- function(data_pnadc){
   options(survey.lonely.psu="adjust")
-  ########## creating desing object w/o poststratification
-  data_pre <- survey::svydesign(ids     = ~UPA,
+  if("V1027" %in% names(data_pnadc)){
+    ########## creating desing object w/o poststratification
+    data_pre <- survey::svydesign(ids     = ~UPA,
                         strata  = ~Estrato,
                         data    = data_pnadc,
                         weights = ~V1027,
                         nest    = T)
-  ########## defining total for poststratification
-  popc.types <- data.frame(posest = as.character(unique(data_pnadc$posest)),
+    ########## defining total for poststratification
+    popc.types <- data.frame(posest = as.character(unique(data_pnadc$posest)),
                            Freq   = as.numeric(unique(data_pnadc$V1029)))
-  popc.types <- (popc.types[order(popc.types$posest),])
-  ########## creating final desing object w/ poststratification
-  data_pos <- survey::postStratify(design     = data_pre,
+    popc.types <- (popc.types[order(popc.types$posest),])
+    ########## creating final desing object w/ poststratification
+    data_pos <- survey::postStratify(design     = data_pre,
                            strata     = ~posest,
                            population = popc.types)
+  }
+  else{
+    ########## creating desing object w/o poststratification
+    data_pre <- survey::svydesign(ids     = ~UPA,
+                                  strata  = ~Estrato,
+                                  data    = data_pnadc,
+                                  weights = ~V1031,
+                                  nest    = T)
+    ########## defining total for poststratification
+    popc.types <- data.frame(posest = as.character(unique(data_pnadc$posest)),
+                             Freq   = as.numeric(unique(data_pnadc$V1030)))
+    popc.types <- (popc.types[order(popc.types$posest),])
+    ########## creating final desing object w/ poststratification
+    data_pos <- survey::postStratify(design     = data_pre,
+                                     strata     = ~posest,
+                                     population = popc.types)
+
+  }
 return(data_pos)
 }

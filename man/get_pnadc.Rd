@@ -2,28 +2,37 @@
 % Please edit documentation in R/get_pnadc.R
 \name{get_pnadc}
 \alias{get_pnadc}
-\title{Download and read PNADc microdata}
+\title{Download, label and create design object for PNADc microdata}
 \usage{
-get_pnadc(quarter, year, vars = NULL, savedir = tempdir())
+get_pnadc(year, quarter = NULL, interview = NULL, vars = NULL,
+  labels = T, design = T, savedir = tempdir())
 }
 \arguments{
-\item{quarter}{The quarter of the year of the data to be downloade. must be number from 1 to 4. Vector not accepted.}
+\item{year}{The year of the data to be downloaded. Must be a number between 2012 and current year. Vector not accepted.}
 
-\item{year}{the year of the data to be downloaded.must be a number between 2012 and current year. Vector not accepted.}
+\item{quarter}{The quarter of the year of the data to be downloade. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} number must be provided.}
+
+\item{interview}{The interview number of the data to be downloade. Must be number from 1 to 5. Vector not accepted. Using this option will get annual data. If \code{NULL}, quarterly data will be downloaded instead.}
 
 \item{vars}{Character vector of the name of the variables you want to keep for analysys. \code{default} is to keep all variables}
+
+\item{labels}{\code{logical}. If \code{TRUE}, categorical variables will presented as factors with labels corresponding to the survey's dictionary. Not available for annual data.}
+
+\item{design}{\code{logical}. If \code{TRUE}, \code{get_pnadc} will return a object of class \code{survey.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.}
 
 \item{savedir}{Directory for dowloading data. \code{default} is to use a temporary directory.}
 }
 \value{
-A tibble with the survey design variables and selected variables.
+An object of class \code{survey.design} with the data from PNADc survey and its sample design or a tibble with the survey design variables and selected variables.
 }
 \description{
-Download and read PNADc microdata
+Core function of package. with this function only, the user can download a PNADc microdata from a year or quarter and get a desgin object ready to use with \code{survey} package functions.
 }
 \examples{
 \dontrun{
-pnadc.df <- get_pnadc(2,2016)
-pnadc.df2 <- get_pnadc(1,2017,vars=c("VD4001","VD4002"))}
+pnadc.svy <- get_pnadc(2,2016)
+pnadc.svy2 <- get_pnadc(1,2017,vars=c("VD4001","VD4002"))
+survey::svymean(~VD4002, pnadc.svy2, na.rm=TRUE)
+}
 
 }
