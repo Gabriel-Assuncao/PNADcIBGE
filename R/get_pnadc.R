@@ -1,9 +1,9 @@
 #' Download, label and create design object for PNADc microdata
-#' @description Core function of package. with this function only, the user can download a PNADc microdata from a year or quarter and get a desgin object ready to use with \code{survey} package functions.
+#' @description Core function of package. with this function only, the user can download a PNADc microdata from a year or quarter and get a design object ready to use with \code{survey} package functions.
 #' @import  readr dplyr magrittr RCurl utils timeDate
 #' @param year The year of the data to be downloaded. Must be a number between 2012 and current year. Vector not accepted.
-#' @param quarter The quarter of the year of the data to be downloade. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} number must be provided.
-#' @param interview The interview number of the data to be downloade. Must be number from 1 to 5. Vector not accepted. Using this option will get annual data. If \code{NULL}, quarterly data will be downloaded instead.
+#' @param quarter The quarter of the year of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} number must be provided.
+#' @param interview The interview number of the data to be downloaded. Must be number from 1 to 5. Vector not accepted. Using this option will get annual data. If \code{NULL}, quarterly data will be downloaded instead.
 #' @param vars Character vector of the name of the variables you want to keep for analysys. \code{default} is to keep all variables
 #' @param labels \code{logical}. If \code{TRUE}, categorical variables will presented as factors with labels corresponding to the survey's dictionary. Not available for annual data.
 #' @param savedir Directory for dowloading data. \code{default} is to use a temporary directory.
@@ -20,7 +20,7 @@
 #'
 get_pnadc=function(year, quarter=NULL, interview=NULL, vars=NULL,labels=T,design=T,savedir=tempdir()){
   if(is.null(quarter)&is.null(interview)) stop("Quarter or Interview number must be provided.")
-  if(!is.null(quarter)&!is.null(interview)) stop("Must be provided ONLY quarter number or interview number.")
+  if(!is.null(quarter)&!is.null(interview)) stop("Must be provided ONLY quarter number OR interview number.")
   if(year<2012) stop("Year must be greater or equal to 2012.")
   if(year>timeDate::getRmetricsOptions("currentYear")) stop("Year can't be greater than current year.")
   if(!is.null(quarter)){
@@ -32,39 +32,19 @@ get_pnadc=function(year, quarter=NULL, interview=NULL, vars=NULL,labels=T,design
     if(length(dataname)==0){
       stop('Data unavailable for selected quarter/year')
     }
-    utils::download.file(paste0(ftpdir,"Documentacao/Dicionario_e_input.zip"),paste0(savedir,"/input.zip"))
+    docfiles=unlist(strsplit(RCurl::getURL(paste0(ftpdir,"Documentacao/"), dirlistonly = TRUE),"\r\n"))
+    inputfile=docfiles[substr(docfiles,1,18)=="Dicionario_e_input"]
+    utils::download.file(paste0(ftpdir,"Documentacao/",inputfile),paste0(savedir,"/input.zip"))
     utils::unzip(paste0(savedir,"/input.zip"),exdir=savedir)
-    if(year<2015 |(year == 2015 & quarter < 4)){
-      input_txt <- "Input PNADC_1Tri_2012 a 3Tri_2015.txt"
-    }
-    else if(year < 2016 | (year == 2016 & quarter == 1)){
-      input_txt <- "Input PNADC_4Tri_2015 a 1Tri_2016.txt"
-    }
-    else{
-      filenames <- dir(savedir,pattern = "*.txt")
-      input_txt <- filenames[substr(filenames, 1, 21) == "Input PNADC_2Tri_2016"]
-    }
+    input_txt <- "Input_PNADC_trimestral.txt"
     utils::download.file(paste0(ftpdata,dataname),paste0(savedir,"/",dataname))
     utils::unzip(paste0(savedir,"/",dataname),exdir=savedir)
     microdataname <- paste0(savedir,"/PNADC_0",quarter,year,".txt")
     data_pnadc <- read_pnadc(microdataname,paste0(savedir,"/",input_txt),vars=vars)
     if(labels==T){
-      dicnames <- dir(savedir,pattern = "*.xls")
-      matches <- regmatches(dicnames, gregexpr("[[:digit:]]+", dicnames))
-      for(i in 1:length(dicnames)){
-        if(as.numeric(matches[[i]])[2]<=year & as.numeric(matches[[i]])[4]>=year){
-          if(as.numeric(matches[[i]])[4]==year & as.numeric(matches[[i]])[3]>=quarter){
-            dicfile=paste0(savedir,"/",dicnames[i])
-          }
-          else if(as.numeric(matches[[i]])[2]==year & as.numeric(matches[[i]])[1]<=quarter){
-            dicfile=paste0(savedir,"/",dicnames[i])
-          }
-          else if (as.numeric(matches[[i]])[2]<year & as.numeric(matches[[i]])[4]>year){
-            dicfile=paste0(savedir,"/",dicnames[i])
-          }
-        }
-      }
-      data_pnadc<-pnadc_labeller(data_pnadc,dicfile)
+      dicnames <- dir(savedir,pattern = "PNAD_Continua_microdados.xls")
+      dicfile <- paste0(savedir,"/",dicnames[1])
+      data_pnadc <- pnadc_labeller(data_pnadc,dicfile)
     }
   }
   #Anual data
@@ -83,38 +63,40 @@ get_pnadc=function(year, quarter=NULL, interview=NULL, vars=NULL,labels=T,design
     if(length(dataname)==0){
       stop('Data unavailable for selected interview/year')
     }
+    docfiles <- unlist(strsplit(RCurl::getURL(paste0(ftpdir,"Documentacao/"), dirlistonly = TRUE),"\r\n"))
     if(year<2015){
-      input_txt <- paste0("Input_PNADC_",interview,"entr_2012_a_2014.txt")
+      input_pre <- paste0("Input_PNADC_",interview,"entr_2012_a_2014")
     }
     else {
-      input_txt <- paste0("Input_PNADC_",interview,"entr_",year,".txt")
+      input_pre <- paste0("Input_PNADC_",interview,"entr_",year)
     }
+    input_txt = docfiles[which(startsWith(docfiles,input_pre))]
     utils::download.file(paste0(ftpdata,dataname),paste0(savedir,"/",dataname))
     utils::download.file(paste0(ftpdir,"Documentacao/",input_txt),paste0(savedir,"/",input_txt))
     utils::unzip(paste0(savedir,"/",dataname),exdir=savedir)
     microdataname <- paste0(savedir,"/",dataname)
     data_pnadc <- read_pnadc(microdataname,paste0(savedir,"/",input_txt),vars=vars)
     # if(labels==T){
-    #   dicnames <- unlist(strsplit(RCurl::getURL(paste0(ftpdir,"Documentacao/"), dirlistonly = TRUE),"\r\n"))
-    #   dicnames <- dicnames[unlist(substr(dicnames,1,3))=="dic"]
-    #   matches <- regmatches(dicnames, gregexpr("[[:digit:]]+", dicnames))
-    #   for(i in 1:length(dicnames)){
-    #     if(as.numeric(matches[[i]])[1]==interview){
-    #       if(length(matches[[i]])==2){
-    #         if(as.numeric(matches[[i]])[2]==year){
-    #           dicfile=paste0(savedir,"/Dic_",interview,year,".xls")
-    #           utils::download.file(paste0(ftpdir,"Documentacao/",dicnames[i]),dicfile)
-    #         }
-    #       }
-    #       if(length(matches[[i]])>2){
-    #         if(as.numeric(matches[[i]])[2]<=year & as.numeric(matches[[i]])[3]>=year){
-    #           dicfile=paste0(savedir,"/Dic_",interview,year,".xls")
-    #           utils::download.file(paste0(ftpdir,"Documentacao/",dicnames[i]),dicfile)
-    #         }
-    #       }
+    #    dicnames <- unlist(strsplit(RCurl::getURL(paste0(ftpdir,"Documentacao/"), dirlistonly = TRUE),"\r\n"))
+    #    dicnames <- dicnames[unlist(substr(dicnames,1,3))=="dic"]
+    #    matches <- regmatches(dicnames, gregexpr("[[:digit:]]+", dicnames))
+    #    for(i in 1:length(dicnames)){
+    #      if(as.numeric(matches[[i]])[1]==interview){
+    #        if(length(matches[[i]])==3){
+    #          if(as.numeric(matches[[i]])[2]==year){
+    #            dicfile <- paste0(savedir,"/Dic_",interview,year,".xls")
+    #            utils::download.file(paste0(ftpdir,"Documentacao/",dicnames[i]),dicfile)
+    #          }
+    #        }
+    #        if(length(matches[[i]])>3){
+    #          if(as.numeric(matches[[i]])[2]<=year & as.numeric(matches[[i]])[3]>=year){
+    #            dicfile <- paste0(savedir,"/Dic_",interview,year,".xls")
+    #            utils::download.file(paste0(ftpdir,"Documentacao/",dicnames[i]),dicfile)
+    #          }
+    #        }
     #     }
     #   }
-    #   data_pnadc<-pnadc_labeller(data_pnadc,dicfile)
+    # data_pnadc <- pnadc_labeller(data_pnadc,dicfile)
     # }
   }
   if(design==TRUE){

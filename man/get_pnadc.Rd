@@ -10,9 +10,9 @@ get_pnadc(year, quarter = NULL, interview = NULL, vars = NULL,
 \arguments{
 \item{year}{The year of the data to be downloaded. Must be a number between 2012 and current year. Vector not accepted.}
 
-\item{quarter}{The quarter of the year of the data to be downloade. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} number must be provided.}
+\item{quarter}{The quarter of the year of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} number must be provided.}
 
-\item{interview}{The interview number of the data to be downloade. Must be number from 1 to 5. Vector not accepted. Using this option will get annual data. If \code{NULL}, quarterly data will be downloaded instead.}
+\item{interview}{The interview number of the data to be downloaded. Must be number from 1 to 5. Vector not accepted. Using this option will get annual data. If \code{NULL}, quarterly data will be downloaded instead.}
 
 \item{vars}{Character vector of the name of the variables you want to keep for analysys. \code{default} is to keep all variables}
 
@@ -26,7 +26,7 @@ get_pnadc(year, quarter = NULL, interview = NULL, vars = NULL,
 An object of class \code{survey.design} with the data from PNADc survey and its sample design or a tibble with the survey design variables and selected variables.
 }
 \description{
-Core function of package. with this function only, the user can download a PNADc microdata from a year or quarter and get a desgin object ready to use with \code{survey} package functions.
+Core function of package. with this function only, the user can download a PNADc microdata from a year or quarter and get a design object ready to use with \code{survey} package functions.
 }
 \examples{
 \dontrun{

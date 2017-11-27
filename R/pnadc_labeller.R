@@ -30,7 +30,9 @@ pnadc_labeller <- function(data_pnadc,dictionary.file){
   notlabel <- c("Ano", "Trimestre", "UPA", "Estrato", "V1008",
                 "V1014", "V1016", "posest", "V2003", "V2008", "V20081",
                 "V20082", "V40081", "V40082", "V40083", "V4010", "V4013",
-                "V4041", "V4044","V4075A1","VD4031","VD4035")
+                "V4041", "V4044","V4075A1","VD4031","VD4035",
+                "V401511","V401512","V40161","V40162","V40163","V401711",
+                "V40181","V40182","V40183")
   vars <- names(data_pnadc)
   varsc <- vars[sapply(data_pnadc, class) == "character"]
   varsf <- setdiff(varsc, notlabel)
