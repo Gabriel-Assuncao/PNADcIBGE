@@ -18,64 +18,87 @@
 #'
 #' @export
 #'
-get_pnadc=function(year, quarter=NULL, interview=NULL, vars=NULL,labels=T,design=T,savedir=tempdir()){
-  if(is.null(quarter)&is.null(interview)) stop("Quarter or Interview number must be provided.")
-  if(!is.null(quarter)&!is.null(interview)) stop("Must be provided ONLY quarter number OR interview number.")
-  if(year<2012) stop("Year must be greater or equal to 2012.")
-  if(year>timeDate::getRmetricsOptions("currentYear")) stop("Year can't be greater than current year.")
-  if(!is.null(quarter)){
-    if(quarter>4 | quarter<1) stop("Quarter must be a integer from 1 to 4.")
-    ftpdir=("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/")
-    ftpdata <- paste0(ftpdir,year,"/")
-    datayear <- unlist(strsplit(RCurl::getURL(ftpdata, dirlistonly = TRUE),"\r\n"))
-    dataname <- datayear[substr(datayear,1,12)==paste0("PNADC_0", quarter, year)]
-    if(length(dataname)==0){
-      stop('Data unavailable for selected quarter/year')
+get_pnadc <- function (year, quarter = NULL, interview = NULL, vars = NULL,
+                       labels = T, design = T, savedir = tempdir())
+{
+  if (is.null(quarter) & is.null(interview))
+    stop("Quarter or Interview number must be provided.")
+  if (!is.null(quarter) & !is.null(interview))
+    stop("Must be provided ONLY quarter number OR interview number.")
+  if (year < 2012)
+    stop("Year must be greater or equal to 2012.")
+  if (year > timeDate::getRmetricsOptions("currentYear"))
+    stop("Year can't be greater than current year.")
+  if (!is.null(quarter)) {
+    if (quarter > 4 | quarter < 1)
+      stop("Quarter must be a integer from 1 to 4.")
+    ftpdir = ("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/")
+    ftpdata <- paste0(ftpdir, year, "/")
+    datayear <- unlist(strsplit(gsub("\r\n","\n",RCurl::getURL(ftpdata, dirlistonly = TRUE)),
+                                "\n"))
+    dataname <- datayear[substr(datayear, 1, 12) == paste0("PNADC_0",
+                                                           quarter, year)]
+    if (length(dataname) == 0) {
+      stop("Data unavailable for selected quarter/year")
     }
-    docfiles=unlist(strsplit(RCurl::getURL(paste0(ftpdir,"Documentacao/"), dirlistonly = TRUE),"\r\n"))
-    inputfile=docfiles[substr(docfiles,1,18)=="Dicionario_e_input"]
-    utils::download.file(paste0(ftpdir,"Documentacao/",inputfile),paste0(savedir,"/input.zip"))
-    utils::unzip(paste0(savedir,"/input.zip"),exdir=savedir)
+    docfiles = unlist(strsplit(RCurl::getURL(paste0(ftpdir,
+                                                    "Documentacao/"), dirlistonly = TRUE), "\n"))
+    inputfile = docfiles[substr(docfiles, 1, 18) == "Dicionario_e_input"]
+    utils::download.file(paste0(ftpdir, "Documentacao/",
+                                inputfile), paste0(savedir, "/input.zip"))
+    utils::unzip(paste0(savedir, "/input.zip"), exdir = savedir)
     input_txt <- "Input_PNADC_trimestral.txt"
-    utils::download.file(paste0(ftpdata,dataname),paste0(savedir,"/",dataname))
-    utils::unzip(paste0(savedir,"/",dataname),exdir=savedir)
-    microdataname <- paste0(savedir,"/PNADC_0",quarter,year,".txt")
-    data_pnadc <- read_pnadc(microdataname,paste0(savedir,"/",input_txt),vars=vars)
-    if(labels==T){
-      dicnames <- dir(savedir,pattern = "PNAD_Continua_microdados.xls")
-      dicfile <- paste0(savedir,"/",dicnames[1])
-      data_pnadc <- pnadc_labeller(data_pnadc,dicfile)
+    utils::download.file(paste0(ftpdata, dataname), paste0(savedir,
+                                                           "/", dataname))
+    utils::unzip(paste0(savedir, "/", dataname), exdir = savedir)
+    microdataname <- paste0(savedir, "/PNADC_0", quarter,
+                            year, ".txt")
+    data_pnadc <- read_pnadc(microdataname, paste0(savedir,
+                                                   "/", input_txt), vars = vars)
+    if (labels == T) {
+      dicnames <- dir(savedir, pattern = "PNAD_Continua_microdados.xls")
+      dicfile <- paste0(savedir, "/", dicnames[1])
+      data_pnadc <- pnadc_labeller(data_pnadc, dicfile)
     }
   }
-  #Anual data
-  if(!is.null(interview)){
-    if(interview>5 | interview<1) stop("interview must be a integer from 1 to 5.")
-    ftpdir=("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/")
-    ftpdata <- paste0(ftpdir,"Dados/")
-    datayear <- unlist(strsplit(RCurl::getURL(ftpdata, dirlistonly = TRUE),"\r\n"))
-    yrint_list <- regmatches(datayear, gregexpr("[[:digit:]]+", datayear))
-    dataname=NULL
-    for(i in 1:length(datayear)){
-      if(as.numeric(yrint_list[[i]])[1]==year & as.numeric(yrint_list[[i]])[2]==interview){
-        dataname=datayear[i]
+  if (!is.null(interview)) {
+    if (interview > 5 | interview < 1)
+      stop("interview must be a integer from 1 to 5.")
+    ftpdir = ("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/")
+    ftpdata <- paste0(ftpdir, "Dados/")
+    datayear <- unlist(strsplit(gsub("\r\n","\n",RCurl::getURL(ftpdata, dirlistonly = TRUE)),
+                                "\n"))
+    yrint_list <- regmatches(datayear, gregexpr("[[:digit:]]+",
+                                                datayear))
+    dataname = NULL
+    for (i in 1:length(datayear)) {
+      if (as.numeric(yrint_list[[i]])[1] == year & as.numeric(yrint_list[[i]])[2] ==
+          interview) {
+        dataname = datayear[i]
       }
     }
-    if(length(dataname)==0){
-      stop('Data unavailable for selected interview/year')
+    if (length(dataname) == 0) {
+      stop("Data unavailable for selected interview/year")
     }
-    docfiles <- unlist(strsplit(RCurl::getURL(paste0(ftpdir,"Documentacao/"), dirlistonly = TRUE),"\r\n"))
-    if(year<2015){
-      input_pre <- paste0("Input_PNADC_",interview,"entr_2012_a_2014")
+    docfiles <- unlist(strsplit(gsub("\r\n","\n",RCurl::getURL(paste0(ftpdir,
+                                                                      "Documentacao/"), dirlistonly = TRUE)),
+                                "\n"))
+    if (year < 2015) {
+      input_pre <- paste0("Input_PNADC_", interview, "entr_2012_a_2014")
     }
     else {
-      input_pre <- paste0("Input_PNADC_",interview,"entr_",year)
+      input_pre <- paste0("Input_PNADC_", interview, "entr_",
+                          year)
     }
-    input_txt = docfiles[which(startsWith(docfiles,input_pre))]
-    utils::download.file(paste0(ftpdata,dataname),paste0(savedir,"/",dataname))
-    utils::download.file(paste0(ftpdir,"Documentacao/",input_txt),paste0(savedir,"/",input_txt))
-    utils::unzip(paste0(savedir,"/",dataname),exdir=savedir)
-    microdataname <- paste0(savedir,"/",dataname)
-    data_pnadc <- read_pnadc(microdataname,paste0(savedir,"/",input_txt),vars=vars)
+    input_txt = docfiles[which(startsWith(docfiles, input_pre))]
+    utils::download.file(paste0(ftpdata, dataname), paste0(savedir,
+                                                           "/", dataname))
+    utils::download.file(paste0(ftpdir, "Documentacao/",
+                                input_txt), paste0(savedir, "/", input_txt))
+    utils::unzip(paste0(savedir, "/", dataname), exdir = savedir)
+    microdataname <- paste0(savedir, "/", dataname)
+    data_pnadc <- read_pnadc(microdataname, paste0(savedir,
+                                                   "/", input_txt), vars = vars)
     # if(labels==T){
     #    dicnames <- unlist(strsplit(RCurl::getURL(paste0(ftpdir,"Documentacao/"), dirlistonly = TRUE),"\r\n"))
     #    dicnames <- dicnames[unlist(substr(dicnames,1,3))=="dic"]
@@ -99,8 +122,8 @@ get_pnadc=function(year, quarter=NULL, interview=NULL, vars=NULL,labels=T,design
     # data_pnadc <- pnadc_labeller(data_pnadc,dicfile)
     # }
   }
-  if(design==TRUE){
-    data_pnadc=pnadc_design(data_pnadc)
+  if (design == TRUE) {
+    data_pnadc = pnadc_design(data_pnadc)
   }
   return(data_pnadc)
 }
