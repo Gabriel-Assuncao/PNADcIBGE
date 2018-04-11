@@ -41,8 +41,8 @@ get_pnadc <- function (year, quarter = NULL, interview = NULL, vars = NULL,
     if (length(dataname) == 0) {
       stop("Data unavailable for selected quarter/year")
     }
-    docfiles = unlist(strsplit(RCurl::getURL(paste0(ftpdir,
-                                                    "Documentacao/"), dirlistonly = TRUE), "\n"))
+    docfiles = unlist(strsplit(gsub("\r\n","\n",RCurl::getURL(paste0(ftpdir,
+                                                    "Documentacao/"), dirlistonly = TRUE)), "\n"))
     inputfile = docfiles[substr(docfiles, 1, 18) == "Dicionario_e_input"]
     utils::download.file(paste0(ftpdir, "Documentacao/",
                                 inputfile), paste0(savedir, "/input.zip"))
