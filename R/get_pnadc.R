@@ -51,9 +51,11 @@ get_pnadc <- function (year, quarter = NULL, interview = NULL, vars = NULL,
     utils::download.file(paste0(ftpdata, dataname), paste0(savedir,
                                                            "/", dataname))
     utils::unzip(paste0(savedir, "/", dataname), exdir = savedir)
-    microdataname <- paste0(savedir, "/PNADC_0", quarter,
-                            year, ".txt")
-    data_pnadc <- read_pnadc(microdataname, paste0(savedir,
+    microdataname <- paste0("PNADC_0", quarter,
+                            year)
+    tmpfiles <- dir(savedir,".txt")
+    microdatadir <- paste0(savedir,"/",tmpfiles[substr(tmpfiles, 1, 12) == microdataname])
+    data_pnadc <- read_pnadc(microdatadir, paste0(savedir,
                                                    "/", input_txt), vars = vars)
     if (labels == T) {
       dicnames <- dir(savedir, pattern = "PNAD_Continua_microdados.xls")

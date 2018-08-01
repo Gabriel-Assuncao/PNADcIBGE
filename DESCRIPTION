@@ -1,7 +1,7 @@
 Package: PNADcIBGE
 Type: Package
 Title: Downloading, Reading and Analysing PNADc Microdata
-Version: 0.4.1.1
+Version: 0.4.2
 Authors@R: person("Douglas", "Braga", email = "douglas.braga@ibge.gov.br",
                   role = c("aut", "cre"))
 Description: Provides tools for download, read, and analyse the PNADc
@@ -10,13 +10,14 @@ Description: Provides tools for download, read, and analyse the PNADc
 	Further analyses must be made using package 'survey'.
 Depends: R (>= 3.2.0)
 Imports: magrittr, survey, readr, dplyr, RCurl, utils, timeDate, readxl
+Suggests: srvyr, tidyverse, convey
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2018-04-11 15:07:37 UTC; douglas.braga
 Author: Douglas Braga [aut, cre]
 Maintainer: Douglas Braga <douglas.braga@ibge.gov.br>
+Packaged: 2018-07-30 18:52:50 UTC; douglas.braga
 Repository: CRAN
-Date/Publication: 2018-04-11 15:37:27 UTC
+Date/Publication: 2018-08-01 13:20:05 UTC

@@ -1,10 +1,11 @@
-a85804014034e4489e8b087189633f60 *DESCRIPTION
+60fdaa7bf7c5c9a12898ae1b36ae47e6 *DESCRIPTION
 27180a3f705b1bb2e7d4eaa2add96a70 *NAMESPACE
 4c7cd59a64b9dc0be9ecd6e41faabe9c *R/example.R
-54ea85459c598ec6c0c5d1e0b6f565f1 *R/get_pnadc.R
+6cfd02670bd3d86b308b439b026415be *R/get_pnadc.R
 b569466200b42d416701082eb027a4e0 *R/pnadc_design.R
 422cb493a8b8f4205d6ab3ee4dafec47 *R/pnadc_labeller.R
 021ddc1e2dd3d24106abebee5005ff76 *R/read_pnadc.R
+de5f8eba02cdc1eab045e7b2f180d3a4 *README.md
 47c613ced8470112169b36b9637aea25 *inst/extdata/dictionaryexample.xls
 cf2ff1b820b6468c463900c134eba1b0 *inst/extdata/exampledata.txt
 837791e77e6ed57d18d26ece55a0d122 *inst/extdata/input_example.txt
