@@ -1,7 +1,7 @@
 Package: PNADcIBGE
 Type: Package
 Title: Downloading, Reading and Analysing PNADc Microdata
-Version: 0.4.2
+Version: 0.4.3
 Authors@R: person("Douglas", "Braga", email = "douglas.braga@ibge.gov.br",
                   role = c("aut", "cre"))
 Description: Provides tools for download, read, and analyse the PNADc
@@ -18,6 +18,6 @@ RoxygenNote: 6.0.1
 NeedsCompilation: no
 Author: Douglas Braga [aut, cre]
 Maintainer: Douglas Braga <douglas.braga@ibge.gov.br>
-Packaged: 2018-07-30 18:52:50 UTC; douglas.braga
+Packaged: 2018-08-23 14:47:42 UTC; douglas.braga
 Repository: CRAN
-Date/Publication: 2018-08-01 13:20:05 UTC
+Date/Publication: 2018-08-23 16:34:28 UTC

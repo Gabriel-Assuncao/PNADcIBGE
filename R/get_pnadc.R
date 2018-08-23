@@ -86,10 +86,10 @@ get_pnadc <- function (year, quarter = NULL, interview = NULL, vars = NULL,
                                                                       "Documentacao/"), dirlistonly = TRUE)),
                                 "\n"))
     if (year < 2015) {
-      input_pre <- paste0("Input_PNADC_", interview, "entr_2012_a_2014")
+      input_pre <- paste0("Input_PNADC_", interview, "_visita_2012_a_2014")
     }
     else {
-      input_pre <- paste0("Input_PNADC_", interview, "entr_",
+      input_pre <- paste0("Input_PNADC_", interview, "_visita_",
                           year)
     }
     input_txt = docfiles[which(startsWith(docfiles, input_pre))]

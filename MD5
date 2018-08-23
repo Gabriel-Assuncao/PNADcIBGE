@@ -1,7 +1,7 @@
-60fdaa7bf7c5c9a12898ae1b36ae47e6 *DESCRIPTION
+072741dec9d1642ee2b06ee30a26eedb *DESCRIPTION
 27180a3f705b1bb2e7d4eaa2add96a70 *NAMESPACE
 4c7cd59a64b9dc0be9ecd6e41faabe9c *R/example.R
-6cfd02670bd3d86b308b439b026415be *R/get_pnadc.R
+66deb4b6e0017a81360a108666fb8575 *R/get_pnadc.R
 b569466200b42d416701082eb027a4e0 *R/pnadc_design.R
 422cb493a8b8f4205d6ab3ee4dafec47 *R/pnadc_labeller.R
 021ddc1e2dd3d24106abebee5005ff76 *R/read_pnadc.R
