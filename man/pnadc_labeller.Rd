@@ -18,10 +18,10 @@ A tibble with the data provided from PNADc survey and its categorical variables 
 Label categorical variables from PNADC datasets
 }
 \examples{
-input_path <- pnadc_example("input_example.txt")
-data_path <- pnadc_example("exampledata.txt")
-dictionary.path <- pnadc_example("dictionaryexample.xls")
-pnadc.df <- read_pnadc(data_path, input_path, vars="VD4002")
-pnadc.df <- pnadc_labeller(pnadc.df,dictionary.path)
+input_path <- pnadc_example(path="input_example.txt")
+data_path <- pnadc_example(path="exampledata.txt")
+dictionary.path <- pnadc_example(path="dictionaryexample.xls")
+pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
+pnadc.df <- pnadc_labeller(data_pnadc=pnadc.df, dictionary.file=dictionary.path)
 
 }

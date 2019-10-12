@@ -14,5 +14,5 @@ Path for example data
 }
 \examples{
 pnadc_example()
-pnadc_example("exampledata.txt")
+pnadc_example(path="exampledata.txt")
 }

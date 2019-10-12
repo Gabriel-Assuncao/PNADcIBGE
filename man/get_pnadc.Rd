@@ -30,8 +30,8 @@ Core function of package. with this function only, the user can download a PNADc
 }
 \examples{
 \dontrun{
-pnadc.svy <- get_pnadc(2,2016)
-pnadc.svy2 <- get_pnadc(1,2017,vars=c("VD4001","VD4002"))
+pnadc.svy <- get_pnadc(year=2016, quarter=2)
+pnadc.svy2 <- get_pnadc(year=2017, quarter=1, vars=c("VD4001","VD4002"))
 survey::svymean(~VD4002, pnadc.svy2, na.rm=TRUE)
 }
 

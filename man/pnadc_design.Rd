@@ -18,21 +18,21 @@ Create pnadc survey object utilizing its sampling design for analysis with surve
 \examples{
 
 #Using data read from disk
-input_path <- pnadc_example("input_example.txt")
-data_path <- pnadc_example("exampledata.txt")
-pnadc.df <- read_pnadc(data_path, input_path, vars="VD4002")
-dictionary.path <- pnadc_example("dictionaryexample.xls")
-pnadc.df <- pnadc_labeller(pnadc.df,dictionary.path)
+input_path <- pnadc_example(path="input_example.txt")
+data_path <- pnadc_example(path="exampledata.txt")
+pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
+dictionary.path <- pnadc_example(path="dictionaryexample.xls")
+pnadc.df <- pnadc_labeller(data_pnadc=pnadc.df, dictionary.file=dictionary.path)
 \dontrun{
-pnadc.svy <- pnadc_design(pnadc.df)
+pnadc.svy <- pnadc_design(data_pnadc=pnadc.df)
 #Calculating unemployment rate
 survey::svymean(~VD4002, pnadc.svy, na.rm=TRUE)}
 
 #Downloading data
 \dontrun{
-pnadc.df2<- get_pnadc(2,2017,vars="VD4002")
-pnadc.df2 <- pnadc_labeller(pnadc.df2,dictionary.path)
-pnadc.svy2 <- pnadc_design(pnadc.df2)
+pnadc.df2 <- get_pnadc(year=2017, quarter=2, vars="VD4002", labels=F, design=F)
+pnadc.df2 <- pnadc_labeller(data_pnadc=pnadc.df2, dictionary.file=dictionary.path)
+pnadc.svy2 <- pnadc_design(data_pnadc=pnadc.df2)
 #Calculating unemployment rate
 survey::svymean(~VD4002, pnadc.svy2, na.rm=TRUE)}
 }

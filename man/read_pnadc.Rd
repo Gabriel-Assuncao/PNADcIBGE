@@ -20,7 +20,7 @@ A tibble with the survey design variables and selected variables.
 Read PNADc microdata
 }
 \examples{
-input_path <- pnadc_example("input_example.txt")
-data_path <- pnadc_example("exampledata.txt")
-pnadc.df <- read_pnadc(data_path,input_path,vars="VD4002")
+input_path <- pnadc_example(path="input_example.txt")
+data_path <- pnadc_example(path="exampledata.txt")
+pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
 }
