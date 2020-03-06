@@ -2,17 +2,29 @@
 % Please edit documentation in R/example.R
 \name{pnadc_example}
 \alias{pnadc_example}
-\title{Path for example data}
+\title{Get the path of the quarter PNADC example files}
 \usage{
 pnadc_example(path = NULL)
 }
 \arguments{
-\item{path}{Name of file. If `NULL`, the example files will be listed.}
+\item{path}{Name of file. If \code{NULL}, the quarter PNADC example files names will be listed.}
+}
+\value{
+A vector with names of all the available quarter PNADC example files or the path for specific requested quarter PNADC example file.
 }
 \description{
-Path for example data
+This function provides the path of the quarter PNADC example files, loaded with this package.
+}
+\note{
+For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
 }
 \examples{
 pnadc_example()
 pnadc_example(path="exampledata.txt")
+pnadc_example(path="input_example.txt")
+pnadc_example(path="dictionaryexample.xls")
+pnadc_example(path="deflatorexample.xls")
+}
+\seealso{
+\link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflators variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.
 }

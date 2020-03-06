@@ -2,37 +2,43 @@
 % Please edit documentation in R/pnadc_design.R
 \name{pnadc_design}
 \alias{pnadc_design}
-\title{Create pnadc survey object utilizing its sampling design for analysis with survey package}
+\title{Create PNADC survey object with its sample design}
 \usage{
 pnadc_design(data_pnadc)
 }
 \arguments{
-\item{data_pnadc}{A tibble of PNADc data read with \code{read_pnadc} function.}
+\item{data_pnadc}{A tibble of PNADC microdata read with \code{read_pnadc} function.}
 }
 \value{
-An object of class \code{survey.design} with the data from PNADc survey and its sample design.
+An object of class \code{survey.design} with the data from PNADC and its sample design.
 }
 \description{
-Create pnadc survey object utilizing its sampling design for analysis with survey package
+This function creates PNADC survey object with its sample design for analysis using \code{survey} package functions.
+}
+\note{
+For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
 }
 \examples{
-
-#Using data read from disk
+# Using data read from disk
 input_path <- pnadc_example(path="input_example.txt")
 data_path <- pnadc_example(path="exampledata.txt")
-pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
 dictionary.path <- pnadc_example(path="dictionaryexample.xls")
+deflator.path <- pnadc_example(path="deflatorexample.xls")
+pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
 pnadc.df <- pnadc_labeller(data_pnadc=pnadc.df, dictionary.file=dictionary.path)
+pnadc.df <- pnadc_deflator(data_pnadc=pnadc.df, deflator.file=deflator.path)
 \dontrun{
 pnadc.svy <- pnadc_design(data_pnadc=pnadc.df)
-#Calculating unemployment rate
-survey::svymean(~VD4002, pnadc.svy, na.rm=TRUE)}
-
-#Downloading data
+# Calculating unemployment rate
+survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)}
 \dontrun{
-pnadc.df2 <- get_pnadc(year=2017, quarter=2, vars="VD4002", labels=F, design=F)
-pnadc.df2 <- pnadc_labeller(data_pnadc=pnadc.df2, dictionary.file=dictionary.path)
+# Downloading data
+pnadc.df2 <- get_pnadc(year=2017, quarter=4, vars="VD4002", defyear=2017, defperiod=4,
+                      labels=TRUE, deflator=TRUE, design=FALSE, savedir=tempdir())
 pnadc.svy2 <- pnadc_design(data_pnadc=pnadc.df2)
-#Calculating unemployment rate
-survey::svymean(~VD4002, pnadc.svy2, na.rm=TRUE)}
+# Calculating unemployment rate
+survey::svymean(x=~VD4002, design=pnadc.svy2, na.rm=TRUE)}
+}
+\seealso{
+\link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflators variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
 }

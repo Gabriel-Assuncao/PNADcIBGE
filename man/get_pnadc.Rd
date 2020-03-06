@@ -2,37 +2,66 @@
 % Please edit documentation in R/get_pnadc.R
 \name{get_pnadc}
 \alias{get_pnadc}
-\title{Download, label and create design object for PNADc microdata}
+\title{Download, label, deflate and create survey design object for PNADC microdata}
 \usage{
-get_pnadc(year, quarter = NULL, interview = NULL, vars = NULL,
-  labels = T, design = T, savedir = tempdir())
+get_pnadc(
+  year,
+  quarter = NULL,
+  interview = NULL,
+  topic = NULL,
+  vars = NULL,
+  defyear = NULL,
+  defperiod = NULL,
+  labels = TRUE,
+  deflator = TRUE,
+  design = TRUE,
+  savedir = tempdir()
+)
 }
 \arguments{
 \item{year}{The year of the data to be downloaded. Must be a number between 2012 and current year. Vector not accepted.}
 
-\item{quarter}{The quarter of the year of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} number must be provided.}
+\item{quarter}{The quarter of the year of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} or \code{topic} number must be provided.}
 
-\item{interview}{The interview number of the data to be downloaded. Must be number from 1 to 5. Vector not accepted. Using this option will get annual data. If \code{NULL}, quarterly data will be downloaded instead.}
+\item{interview}{The interview number of the data to be downloaded. Must be number from 1 to 5. Vector not accepted. Using this option will get annual per interview data. If \code{NULL}, \code{quarter} or \code{topic} number must be provided.}
 
-\item{vars}{Character vector of the name of the variables you want to keep for analysys. \code{default} is to keep all variables}
+\item{topic}{The quarter related to the topic of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. Using this option will get annual per topic data. If \code{NULL}, \code{quarter} or \code{interview} number must be provided.}
 
-\item{labels}{\code{logical}. If \code{TRUE}, categorical variables will presented as factors with labels corresponding to the survey's dictionary. Not available for annual data.}
+\item{vars}{Vector of variable names to be kept for analysys. Default is to keep all variables.}
 
-\item{design}{\code{logical}. If \code{TRUE}, \code{get_pnadc} will return a object of class \code{survey.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.}
+\item{defyear}{The year of the deflator data to be downloaded for annual microdata. Must be a number between 2017 and the last available year. Vector not accepted. If \code{NULL}, the deflator year will be defined as the last year available for interview microdata, or as equal to \code{year} for topic microdata. When \code{quarter} is defined, this argument will be ignored. This argument will be used only if \code{deflator} was set as \code{TRUE}.}
 
-\item{savedir}{Directory for dowloading data. \code{default} is to use a temporary directory.}
+\item{defperiod}{The quarter period of the deflator data to be downloaded for annual per topic microdata. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, the deflator period will be defined as equal to \code{topic}. When \code{quarter} or \code{interview} is defined, this argument will be ignored. This argument will be used only if \code{deflator} was set as \code{TRUE}.}
+
+\item{labels}{Logical value. If \code{TRUE}, categorical variables will presented as factors with labels corresponding to the survey's dictionary.}
+
+\item{deflator}{Logical value. If \code{TRUE}, deflators variables will be available for use in the microdata.}
+
+\item{design}{Logical value. If \code{TRUE}, will return an object of class \code{survey.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.}
+
+\item{savedir}{Directory to save the downloaded data. Default is to use a temporary directory.}
 }
 \value{
-An object of class \code{survey.design} with the data from PNADc survey and its sample design or a tibble with the survey design variables and selected variables.
+An object of class \code{survey.design} with the data from PNADC and its sample design, or a tibble with selected variables of the microdata, including the necessary survey design ones.
 }
 \description{
-Core function of package. with this function only, the user can download a PNADc microdata from a year or quarter and get a design object ready to use with \code{survey} package functions.
+Core function of package. With this function only, the user can download a PNADC microdata from a year or quarter and get a sample design object ready to use with \code{survey} package functions.
+}
+\note{
+For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
 }
 \examples{
 \dontrun{
-pnadc.svy <- get_pnadc(year=2016, quarter=2)
-pnadc.svy2 <- get_pnadc(year=2017, quarter=1, vars=c("VD4001","VD4002"))
-survey::svymean(~VD4002, pnadc.svy2, na.rm=TRUE)
+pnadc.svy <- get_pnadc(year=2017, quarter=4, vars=c("VD4001","VD4002"), defyear=2017, defperiod=4,
+                       labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
+survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)
+pnadc.svy2 <- get_pnadc(year=2017, interview=5, vars=c("V4112","V4121B"), defyear=2017, defperiod=4,
+                        labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
+survey::svymean(x=~V4121B, design=pnadc.svy2, na.rm=TRUE)
+pnadc.svy3 <- get_pnadc(year=2017, topic=4, vars=c("S01022","S01025"), defyear=2017, defperiod=4,
+                        labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
+survey::svymean(x=~S01022, design=pnadc.svy3, na.rm=TRUE)}
 }
-
+\seealso{
+\link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflators variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
 }

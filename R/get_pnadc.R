@@ -1,131 +1,279 @@
-#' Download, label and create design object for PNADc microdata
-#' @description Core function of package. with this function only, the user can download a PNADc microdata from a year or quarter and get a design object ready to use with \code{survey} package functions.
-#' @import  readr dplyr magrittr RCurl utils timeDate
+#' Download, label, deflate and create survey design object for PNADC microdata
+#' @description Core function of package. With this function only, the user can download a PNADC microdata from a year or quarter and get a sample design object ready to use with \code{survey} package functions.
+#' @import survey readr dplyr magrittr RCurl utils timeDate readxl tibble
 #' @param year The year of the data to be downloaded. Must be a number between 2012 and current year. Vector not accepted.
-#' @param quarter The quarter of the year of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} number must be provided.
-#' @param interview The interview number of the data to be downloaded. Must be number from 1 to 5. Vector not accepted. Using this option will get annual data. If \code{NULL}, quarterly data will be downloaded instead.
-#' @param vars Character vector of the name of the variables you want to keep for analysys. \code{default} is to keep all variables
-#' @param labels \code{logical}. If \code{TRUE}, categorical variables will presented as factors with labels corresponding to the survey's dictionary. Not available for annual data.
-#' @param savedir Directory for dowloading data. \code{default} is to use a temporary directory.
-#' @param design \code{logical}. If \code{TRUE}, \code{get_pnadc} will return a object of class \code{survey.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.
-#' @return An object of class \code{survey.design} with the data from PNADc survey and its sample design or a tibble with the survey design variables and selected variables.
+#' @param quarter The quarter of the year of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} or \code{topic} number must be provided.
+#' @param interview The interview number of the data to be downloaded. Must be number from 1 to 5. Vector not accepted. Using this option will get annual per interview data. If \code{NULL}, \code{quarter} or \code{topic} number must be provided.
+#' @param topic The quarter related to the topic of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. Using this option will get annual per topic data. If \code{NULL}, \code{quarter} or \code{interview} number must be provided.
+#' @param vars Vector of variable names to be kept for analysys. Default is to keep all variables.
+#' @param defyear The year of the deflator data to be downloaded for annual microdata. Must be a number between 2017 and the last available year. Vector not accepted. If \code{NULL}, the deflator year will be defined as the last year available for interview microdata, or as equal to \code{year} for topic microdata. When \code{quarter} is defined, this argument will be ignored. This argument will be used only if \code{deflator} was set as \code{TRUE}.
+#' @param defperiod The quarter period of the deflator data to be downloaded for annual per topic microdata. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, the deflator period will be defined as equal to \code{topic}. When \code{quarter} or \code{interview} is defined, this argument will be ignored. This argument will be used only if \code{deflator} was set as \code{TRUE}.
+#' @param labels Logical value. If \code{TRUE}, categorical variables will presented as factors with labels corresponding to the survey's dictionary.
+#' @param deflator Logical value. If \code{TRUE}, deflators variables will be available for use in the microdata.
+#' @param design Logical value. If \code{TRUE}, will return an object of class \code{survey.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.
+#' @param savedir Directory to save the downloaded data. Default is to use a temporary directory.
+#' @return An object of class \code{survey.design} with the data from PNADC and its sample design, or a tibble with selected variables of the microdata, including the necessary survey design ones.
+#' @note For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
+#' @seealso \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflators variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
 #' @examples
 #' \dontrun{
-#' pnadc.svy <- get_pnadc(2,2016)
-#' pnadc.svy2 <- get_pnadc(1,2017,vars=c("VD4001","VD4002"))
-#' survey::svymean(~VD4002, pnadc.svy2, na.rm=TRUE)
-#' }
-#'
+#' pnadc.svy <- get_pnadc(year=2017, quarter=4, vars=c("VD4001","VD4002"), defyear=2017, defperiod=4,
+#'                        labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
+#' survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)
+#' pnadc.svy2 <- get_pnadc(year=2017, interview=5, vars=c("V4112","V4121B"), defyear=2017, defperiod=4,
+#'                         labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
+#' survey::svymean(x=~V4121B, design=pnadc.svy2, na.rm=TRUE)
+#' pnadc.svy3 <- get_pnadc(year=2017, topic=4, vars=c("S01022","S01025"), defyear=2017, defperiod=4,
+#'                         labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
+#' survey::svymean(x=~S01022, design=pnadc.svy3, na.rm=TRUE)}
 #' @export
-#'
-get_pnadc <- function (year, quarter = NULL, interview = NULL, vars = NULL,
-                       labels = T, design = T, savedir = tempdir())
+
+get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars = NULL, defyear = NULL, defperiod = NULL, 
+                       labels = TRUE, deflator = TRUE, design = TRUE, savedir = tempdir())
 {
-  if (is.null(quarter) & is.null(interview))
-    stop("Quarter or Interview number must be provided.")
-  if (!is.null(quarter) & !is.null(interview))
-    stop("Must be provided ONLY quarter number OR interview number.")
-  if (year < 2012)
+  if (is.null(quarter) & is.null(interview) & is.null(topic)) {
+    stop("Quarter number or interview number or topic number must be provided.")
+  }
+  if (!is.null(quarter) & !is.null(interview) & !is.null(topic)) {
+    stop("Must be provided only one between quarter number, interview number and topic number.")
+  }
+  if (year < 2012) {
     stop("Year must be greater or equal to 2012.")
-  if (year > timeDate::getRmetricsOptions("currentYear"))
-    stop("Year can't be greater than current year.")
+  }
+  if (year > timeDate::getRmetricsOptions("currentYear")) {
+    stop("Year cannot be greater than current year.")
+  }
+  if (!dir.exists(savedir)) {
+    savedir <- tempdir()
+    warning(paste0("The directory provided does not exist, so the directory was set to '", tempdir()), "'.")
+  }
+  if (substr(savedir, nchar(savedir), nchar(savedir)) == "/" | substr(savedir, nchar(savedir), nchar(savedir)) == "\\") {
+    savedir <- substr(savedir, 1, nchar(savedir)-1)
+  }
   if (!is.null(quarter)) {
-    if (quarter > 4 | quarter < 1)
-      stop("Quarter must be a integer from 1 to 4.")
-    ftpdir = ("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/")
-    ftpdata <- paste0(ftpdir, year, "/")
-    datayear <- unlist(strsplit(gsub("\r\n","\n",RCurl::getURL(ftpdata, dirlistonly = TRUE)),
-                                "\n"))
-    dataname <- datayear[substr(datayear, 1, 12) == paste0("PNADC_0",
-                                                           quarter, year)]
-    if (length(dataname) == 0) {
-      stop("Data unavailable for selected quarter/year")
+    if (quarter < 1 | quarter > 4) { 
+      stop("Quarter number must be an integer from 1 to 4.")
     }
-    docfiles = unlist(strsplit(gsub("\r\n","\n",RCurl::getURL(paste0(ftpdir,
-                                                    "Documentacao/"), dirlistonly = TRUE)), "\n"))
-    inputfile = docfiles[substr(docfiles, 1, 18) == "Dicionario_e_input"]
-    utils::download.file(paste0(ftpdir, "Documentacao/",
-                                inputfile), paste0(savedir, "/input.zip"))
-    utils::unzip(paste0(savedir, "/input.zip"), exdir = savedir)
-    input_txt <- "Input_PNADC_trimestral.txt"
-    utils::download.file(paste0(ftpdata, dataname), paste0(savedir,
-                                                           "/", dataname))
-    utils::unzip(paste0(savedir, "/", dataname), exdir = savedir)
-    microdataname <- paste0("PNADC_0", quarter,
-                            year)
-    tmpfiles <- dir(savedir,".txt")
-    microdatadir <- paste0(savedir,"/",tmpfiles[substr(tmpfiles, 1, 12) == microdataname])
-    data_pnadc <- read_pnadc(microdatadir, paste0(savedir,
-                                                   "/", input_txt), vars = vars)
-    if (labels == T) {
-      dicnames <- dir(savedir, pattern = "PNAD_Continua_microdados.xls")
-      dicfile <- paste0(savedir, "/", dicnames[1])
-      data_pnadc <- pnadc_labeller(data_pnadc, dicfile)
+    ftpdir <- ("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/")
+    ftpdata <- paste0(ftpdir, year, "/")
+    datayear <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(ftpdata, dirlistonly=TRUE)), "\n"))
+    dataname <- datayear[substr(datayear, 1, 12) == paste0("PNADC_0", quarter, year)]
+    if (length(dataname) == 0) {
+      stop("Data unavailable for selected quarter and year.")
+    }
+    docfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao/"), dirlistonly = TRUE)), "\n"))
+    inputzip <- docfiles[which(startsWith(docfiles, "Dicionario_e_input"))]
+    defzip <- docfiles[which(startsWith(docfiles, "Deflatores"))]
+    utils::download.file(url=paste0(ftpdir, "Documentacao/", inputzip), destfile=paste0(savedir, "/Dicionario_e_input.zip"), mode="wb")
+    utils::unzip(zipfile=paste0(savedir, "/Dicionario_e_input.zip"), exdir=savedir)
+    utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
+    utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+    microdataname <- dir(savedir, pattern=paste0("^PNADC_0", quarter, year, ".*\\.txt$"))
+    microdatafile <- paste0(savedir, "/", microdataname)
+    microdatafile <- rownames(file.info(microdatafile)[order(file.info(microdatafile)$ctime),])[length(microdatafile)]
+    inputname <- dir(savedir, pattern=paste0("^input_PNADC_trimestral.*\\.txt$"))
+    inputfile <- paste0(savedir, "/", inputname)
+    inputfile <- rownames(file.info(inputfile)[order(file.info(inputfile)$ctime),])[length(inputfile)]
+    data_pnadc <- PNADcIBGE::read_pnadc(microdata=microdatafile, input_txt=inputfile, vars=vars)
+    if (labels == TRUE) {
+      if (exists("pnadc_labeller", where="package:PNADcIBGE", mode="function")) {
+        dicname <- dir(savedir, pattern=paste0("^dicionario_PNADC_microdados_trimestral.*\\.xls$"))
+        dicfile <- paste0(savedir, "/", dicname)
+        dicfile <- rownames(file.info(dicfile)[order(file.info(dicfile)$ctime),])[length(dicfile)]
+        data_pnadc <- PNADcIBGE::pnadc_labeller(data_pnadc=data_pnadc, dictionary.file=dicfile)
+      }
+      else {
+        warning("Labeller function is unavailable in package PNADcIBGE.")
+      }
+    }
+    if (deflator == TRUE) {
+      if (exists("pnadc_deflator", where="package:PNADcIBGE", mode="function")) {
+        utils::download.file(url=paste0(ftpdir, "Documentacao/", defzip), destfile=paste0(savedir, "/Deflatores.zip"), mode="wb")
+        utils::unzip(zipfile=paste0(savedir, "/Deflatores.zip"), exdir=savedir)
+        defname <- dir(savedir, pattern=paste0("^deflator_PNADC_.*\\_trimestral_.*\\.xls$"))
+        deffile <- paste0(savedir, "/", defname)
+        deffile <- rownames(file.info(deffile)[order(file.info(deffile)$ctime),])[length(deffile)]
+        data_pnadc <- PNADcIBGE::pnadc_deflator(data_pnadc=data_pnadc, deflator.file=deffile)
+      }
+      else {
+        warning("Deflator function is unavailable in package PNADcIBGE.")
+      }
     }
   }
   if (!is.null(interview)) {
-    if (interview > 5 | interview < 1)
-      stop("interview must be a integer from 1 to 5.")
-    ftpdir = ("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/")
-    ftpdata <- paste0(ftpdir, "Dados/")
-    datayear <- unlist(strsplit(gsub("\r\n","\n",RCurl::getURL(ftpdata, dirlistonly = TRUE)),
-                                "\n"))
-    yrint_list <- regmatches(datayear, gregexpr("[[:digit:]]+",
-                                                datayear))
-    dataname = NULL
+    if (interview < 1 | interview > 5) {
+      stop("Interview number must be a integer from 1 to 5.")
+    }
+    ftpdir <- ("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/")
+    ftpdata <- paste0(ftpdir, "Visita_", interview, "/Dados/")
+    datayear <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(ftpdata, dirlistonly=TRUE)), "\n"))
+    yrint_list <- regmatches(datayear, gregexpr("[[:digit:]]+", datayear))
+    dataname <- NULL
     for (i in 1:length(datayear)) {
-      if (as.numeric(yrint_list[[i]])[1] == year & as.numeric(yrint_list[[i]])[2] ==
-          interview) {
-        dataname = datayear[i]
+      if (as.numeric(yrint_list[[i]])[1] == year & as.numeric(yrint_list[[i]])[2] == interview) {
+        dataname <- datayear[i]
       }
     }
     if (length(dataname) == 0) {
-      stop("Data unavailable for selected interview/year")
+      stop("Data unavailable for selected interview and year.")
     }
-    docfiles <- unlist(strsplit(gsub("\r\n","\n",RCurl::getURL(paste0(ftpdir,
-                                                                      "Documentacao/"), dirlistonly = TRUE)),
-                                "\n"))
+    docfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Visita_", interview, "/Documentacao/"), dirlistonly=TRUE)), "\n"))
     if (year < 2015) {
-      input_pre <- paste0("Input_PNADC_", interview, "_visita_2012_a_2014")
+      inputpre <- docfiles[which(startsWith(docfiles, paste0("input_PNADC_2012_a_2014_visita", interview)))]
+      dicpre <- docfiles[which(startsWith(docfiles, paste0("dicionario_PNADC_microdados_2012_a_2014_visita", interview)))]
     }
     else {
-      input_pre <- paste0("Input_PNADC_", interview, "_visita_",
-                          year)
+      inputpre <- docfiles[which(startsWith(docfiles, paste0("input_PNADC_", year, "_visita", interview)))]
+      dicpre <- docfiles[which(startsWith(docfiles, paste0("dicionario_PNADC_microdados_", year, "_visita", interview)))]
     }
-    input_txt = docfiles[which(startsWith(docfiles, input_pre))]
-    utils::download.file(paste0(ftpdata, dataname), paste0(savedir,
-                                                           "/", dataname))
-    utils::download.file(paste0(ftpdir, "Documentacao/",
-                                input_txt), paste0(savedir, "/", input_txt))
-    utils::unzip(paste0(savedir, "/", dataname), exdir = savedir)
-    microdataname <- paste0(savedir, "/", dataname)
-    data_pnadc <- read_pnadc(microdataname, paste0(savedir,
-                                                   "/", input_txt), vars = vars)
-    # if(labels==T){
-    #    dicnames <- unlist(strsplit(RCurl::getURL(paste0(ftpdir,"Documentacao/"), dirlistonly = TRUE),"\r\n"))
-    #    dicnames <- dicnames[unlist(substr(dicnames,1,3))=="dic"]
-    #    matches <- regmatches(dicnames, gregexpr("[[:digit:]]+", dicnames))
-    #    for(i in 1:length(dicnames)){
-    #      if(as.numeric(matches[[i]])[1]==interview){
-    #        if(length(matches[[i]])==3){
-    #          if(as.numeric(matches[[i]])[2]==year){
-    #            dicfile <- paste0(savedir,"/Dic_",interview,year,".xls")
-    #            utils::download.file(paste0(ftpdir,"Documentacao/",dicnames[i]),dicfile)
-    #          }
-    #        }
-    #        if(length(matches[[i]])>3){
-    #          if(as.numeric(matches[[i]])[2]<=year & as.numeric(matches[[i]])[3]>=year){
-    #            dicfile <- paste0(savedir,"/Dic_",interview,year,".xls")
-    #            utils::download.file(paste0(ftpdir,"Documentacao/",dicnames[i]),dicfile)
-    #          }
-    #        }
-    #     }
-    #   }
-    # data_pnadc <- pnadc_labeller(data_pnadc,dicfile)
-    # }
+    utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
+    utils::download.file(url=paste0(ftpdir, "Visita_", interview, "/Documentacao/", inputpre), destfile=paste0(savedir, "/", inputpre), mode="wb")
+    utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+    microdataname <- dir(savedir, pattern=paste0("^PNADC_", year, "_visita", interview, ".*\\.txt$"))
+    microdatafile <- paste0(savedir, "/", microdataname)
+    microdatafile <- rownames(file.info(microdatafile)[order(file.info(microdatafile)$ctime),])[length(microdatafile)]
+    inputname <- dir(savedir, pattern=paste0("^input_PNADC_.*\\_visita", interview, ".*\\.txt$"))
+    inputfile <- paste0(savedir, "/", inputname)
+    inputfile <- rownames(file.info(inputfile)[order(file.info(inputfile)$ctime),])[length(inputfile)]
+    data_pnadc <- PNADcIBGE::read_pnadc(microdata=microdatafile, input_txt=inputfile, vars=vars)
+    if (labels == TRUE) {
+      if (exists("pnadc_labeller", where="package:PNADcIBGE", mode="function")) {
+        utils::download.file(url=paste0(ftpdir, "Visita_", interview, "/Documentacao/", dicpre), destfile=paste0(savedir, "/", dicpre), mode="wb")
+        dicname <- dir(savedir, pattern=paste0("^dicionario_PNADC_microdados_.*\\_visita", interview, ".*\\.xls$"))
+        dicfile <- paste0(savedir, "/", dicname)
+        dicfile <- rownames(file.info(dicfile)[order(file.info(dicfile)$ctime),])[length(dicfile)]
+        data_pnadc <- PNADcIBGE::pnadc_labeller(data_pnadc=data_pnadc, dictionary.file=dicfile)
+      }
+      else {
+        warning("Labeller function is unavailable in package PNADcIBGE.")
+      }
+    }
+    if (deflator == TRUE) {
+      if (exists("pnadc_deflator", where="package:PNADcIBGE", mode="function")) {
+        arcfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao_Geral/"), dirlistonly=TRUE)), "\n"))
+        if (is.null(defyear)) {
+          defyear <- timeDate::getRmetricsOptions("currentYear") - 1
+          warning(paste0("Deflator year was not provided, so deflator year was set to ", defyear, "."))
+        }
+        if (defyear < year) {
+          defyear <- year
+          warning(paste0("Deflator year must be greater or equal to microdata year, so deflator year was changed to ", defyear, "."))
+        }
+        if (defyear < 2017 | defyear >= timeDate::getRmetricsOptions("currentYear")) {
+          defyear <- timeDate::getRmetricsOptions("currentYear") - 1
+          warning(paste0("Deflator year must be greater or equal to 2017 and cannot be greater or equal than current year, so deflator year was changed to ", defyear, "."))
+        }
+        if (identical(arcfiles[which(startsWith(arcfiles, paste0("deflator_PNADC_", defyear)))], character(0))) {
+          defyear <- defyear - 1
+          warning(paste0("Deflator data unavailable for selected year, so deflator year was changed to ", defyear, "."))
+        }
+        defpre <- arcfiles[which(startsWith(arcfiles, paste0("deflator_PNADC_", defyear)))]
+        utils::download.file(url=paste0(ftpdir, "Documentacao_Geral/", defpre), destfile=paste0(savedir, "/", defpre), mode="wb")
+        defname <- dir(savedir, pattern=paste0("^deflator_PNADC_", defyear, ".*\\.xls$"))
+        deffile <- paste0(savedir, "/", defname)
+        deffile <- rownames(file.info(deffile)[order(file.info(deffile)$ctime),])[length(deffile)]
+        data_pnadc <- PNADcIBGE::pnadc_deflator(data_pnadc=data_pnadc, deflator.file=deffile)
+      }
+      else {
+        warning("Deflator function is unavailable in package PNADcIBGE.")
+      }
+    }
+  }
+  if (!is.null(topic)) {
+    if (topic < 1 | topic > 4) {
+      stop("Topic number must be a integer from 1 to 4.")
+    }
+    ftpdir <- ("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/")
+    ftpdata <- paste0(ftpdir, "Trimestre_", topic, "/Dados/")
+    datayear <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(ftpdata, dirlistonly=TRUE)), "\n"))
+    yrint_list <- regmatches(datayear, gregexpr("[[:digit:]]+", datayear))
+    dataname <- NULL
+    for (i in 1:length(datayear)) {
+      if (as.numeric(yrint_list[[i]])[1] == year & as.numeric(yrint_list[[i]])[2] == topic) {
+        dataname <- datayear[i]
+      }
+    }
+    if (length(dataname) == 0) {
+      stop("Data unavailable for selected topic and year.")
+    }
+    docfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", topic, "/Documentacao/"), dirlistonly=TRUE)), "\n"))
+    inputpre <- docfiles[which(startsWith(docfiles, paste0("input_PNADC_trimestre", topic)))]
+    dicpre <- docfiles[which(startsWith(docfiles, paste0("dicionario_PNADC_microdados_trimestre", topic)))]
+    utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
+    utils::download.file(url=paste0(ftpdir, "Trimestre_", topic, "/Documentacao/", inputpre), destfile=paste0(savedir, "/", inputpre), mode="wb")
+    utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+    microdataname <- dir(savedir, pattern=paste0("^PNADC_", year, "_trimestre", topic, ".*\\.txt$"))
+    microdatafile <- paste0(savedir, "/", microdataname)
+    microdatafile <- rownames(file.info(microdatafile)[order(file.info(microdatafile)$ctime),])[length(microdatafile)]
+    inputname <- dir(savedir, pattern=paste0("^input_PNADC_trimestre", topic, ".*\\.txt$"))
+    inputfile <- paste0(savedir, "/", inputname)
+    inputfile <- rownames(file.info(inputfile)[order(file.info(inputfile)$ctime),])[length(inputfile)]
+    data_pnadc <- PNADcIBGE::read_pnadc(microdata=microdatafile, input_txt=inputfile, vars=vars)
+    if (labels == TRUE) {
+      if (exists("pnadc_labeller", where="package:PNADcIBGE", mode="function")) {
+        utils::download.file(url=paste0(ftpdir, "Trimestre_", topic, "/Documentacao/", dicpre), destfile=paste0(savedir, "/", dicpre), mode="wb")
+        dicname <- dir(savedir, pattern=paste0("^dicionario_PNADC_microdados_trimestre", topic, ".*\\.xls$"))
+        dicfile <- paste0(savedir, "/", dicname)
+        dicfile <- rownames(file.info(dicfile)[order(file.info(dicfile)$ctime),])[length(dicfile)]
+        data_pnadc <- PNADcIBGE::pnadc_labeller(data_pnadc=data_pnadc, dictionary.file=dicfile)
+      }
+      else {
+        warning("Labeller function is unavailable in package PNADcIBGE.")
+      }
+    }
+    if (deflator == TRUE) {
+      if (exists("pnadc_deflator", where="package:PNADcIBGE", mode="function")) {
+        arcfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao_Geral/"), dirlistonly=TRUE)), "\n"))
+        if (is.null(defyear) | is.null(defperiod)) {
+          defyear <- year
+          defperiod <- topic
+          warning(paste0("Deflator year or period was not provided, so deflator year was set to ", defyear, " and period was set to ", defperiod, "."))
+        }
+        if (defyear < year) {
+          defyear <- year
+          warning(paste0("Deflator year must be greater or equal to microdata year, so deflator year was changed to ", defyear, "."))
+        }
+        if (defyear == 2016) {
+          defyear <- 2017
+          warning(paste0("There is no Deflator data for 2016, so deflator year was changed to ", defyear, "."))
+        }
+        if (defyear < 2017 | defyear > timeDate::getRmetricsOptions("currentYear")) {
+          defyear <- year
+          warning(paste0("Deflator year must be greater or equal to 2017 and cannot be greater than current year, so deflator year was changed to ", defyear, "."))
+        }
+        if (defyear == year & defperiod < topic) {
+          defperiod <- topic
+          warning(paste0("For ", defyear, ", deflator period must be greater or equal to microdata topic, so deflator period was changed to ", defperiod, "."))
+        }
+        if (defperiod < 1 | defperiod > 4) {
+          defperiod <- topic
+          warning(paste0("Deflator period must be greater or equal to 1 and cannot be greater than 4, so deflator period was changed to ", defperiod, "."))
+        }
+        perfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", defperiod, "/Documentacao/"), dirlistonly=TRUE)), "\n"))
+        if (identical(perfiles[which(startsWith(perfiles, paste0("deflator_PNADC_", defyear, "_trimestre", defperiod)))], character(0))) {
+          defyear <- year
+          defperiod <- topic
+          warning(paste0("Deflator data unavailable for selected year and period, so deflator year was changed to ", defyear, " and period was changed to ", defperiod, "."))
+        }
+        defpre <- perfiles[which(startsWith(perfiles, paste0("deflator_PNADC_", defyear, "_trimestre", defperiod)))]
+        utils::download.file(url=paste0(ftpdir, "Trimestre_", defperiod, "/Documentacao/", defpre), destfile=paste0(savedir, "/", defpre), mode="wb")
+        defname <- dir(savedir, pattern=paste0("^deflator_PNADC_", defyear, "_trimestre", defperiod, ".*\\.xls$"))
+        deffile <- paste0(savedir, "/", defname)
+        deffile <- rownames(file.info(deffile)[order(file.info(deffile)$ctime),])[length(deffile)]
+        data_pnadc <- PNADcIBGE::pnadc_deflator(data_pnadc=data_pnadc, deflator.file=deffile)
+      }
+      else {
+        warning("Deflator function is unavailable in package PNADcIBGE.")
+      }
+    }
   }
   if (design == TRUE) {
-    data_pnadc = pnadc_design(data_pnadc)
+    if (exists("pnadc_design", where="package:PNADcIBGE", mode="function")) {
+      data_pnadc <- PNADcIBGE::pnadc_design(data_pnadc=data_pnadc)
+    }
+    else {
+      warning("Sample design function is unavailable in package PNADcIBGE.")
+    }
   }
   return(data_pnadc)
 }

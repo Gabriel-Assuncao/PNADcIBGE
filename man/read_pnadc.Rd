@@ -2,25 +2,31 @@
 % Please edit documentation in R/read_pnadc.R
 \name{read_pnadc}
 \alias{read_pnadc}
-\title{Read PNADc microdata}
+\title{Read PNADC microdata}
 \usage{
 read_pnadc(microdata, input_txt, vars = NULL)
 }
 \arguments{
-\item{microdata}{A text file containing microdata from PNADc survey. The file must be downloaded from \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/}}
+\item{microdata}{A text file containing microdata from PNADC survey, available on official website:\cr Quarter (select a microdata file, according to the appropriated year and, then, quarter) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/}.\cr Annual per Interview (select a microdata file, according to the appropriated interview and, then, inside the data folder, choose the desired year) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/}.\cr Annual per Topic (select a microdata file, according to the appropriated quarter related to the topic and, then, inside the data folder, choose the desired year) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/}.}
 
-\item{input_txt}{A text file available along with the microdata containing the input script for SAS. They are available at \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/Documentacao/Dicionario_e_input.zip}}
+\item{input_txt}{A text file, related to the microdata, containing the input script for SAS, available on official website:\cr Quarter - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/Documentacao/Dicionario_e_input.zip}.\cr Annual per Interview (select a input txt file, according to the appropriated interview and, then, inside the documentation folder, choose the desired year) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/}.\cr Annual per Topic (select a input txt file, according to the appropriated quarter related to the topic, inside the documentation folder) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/}.}
 
-\item{vars}{Character vector of the name of the variables you want to keep for analysys. \code{default} is to keep all variables}
+\item{vars}{Vector of variable names to be kept for analysys. Default is to keep all variables.}
 }
 \value{
-A tibble with the survey design variables and selected variables.
+A tibble with selected variables of the microdata, including the necessary survey design ones.
 }
 \description{
-Read PNADc microdata
+This function reads PNADC microdata.
+}
+\note{
+For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
 }
 \examples{
 input_path <- pnadc_example(path="input_example.txt")
 data_path <- pnadc_example(path="exampledata.txt")
 pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
+}
+\seealso{
+\link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflators variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
 }

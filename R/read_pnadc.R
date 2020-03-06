@@ -1,38 +1,30 @@
-#' Read PNADc microdata
-#' @import readr dplyr magrittr
-#' @param microdata A text file containing microdata from PNADc survey. The file must be downloaded from \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/}
-#' @param input_txt A text file available along with the microdata containing the input script for SAS. They are available at \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/Documentacao/Dicionario_e_input.zip}
-#' @param vars Character vector of the name of the variables you want to keep for analysys. \code{default} is to keep all variables
-#' @return A tibble with the survey design variables and selected variables.
+#' Read PNADC microdata
+#' @description This function reads PNADC microdata.
+#' @import survey readr dplyr magrittr RCurl utils timeDate readxl tibble
+#' @param microdata A text file containing microdata from PNADC survey, available on official website:\cr Quarter (select a microdata file, according to the appropriated year and, then, quarter) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/}.\cr Annual per Interview (select a microdata file, according to the appropriated interview and, then, inside the data folder, choose the desired year) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/}.\cr Annual per Topic (select a microdata file, according to the appropriated quarter related to the topic and, then, inside the data folder, choose the desired year) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/}.
+#' @param input_txt A text file, related to the microdata, containing the input script for SAS, available on official website:\cr Quarter - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/Documentacao/Dicionario_e_input.zip}.\cr Annual per Interview (select a input txt file, according to the appropriated interview and, then, inside the documentation folder, choose the desired year) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/}.\cr Annual per Topic (select a input txt file, according to the appropriated quarter related to the topic, inside the documentation folder) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/}.
+#' @param vars Vector of variable names to be kept for analysys. Default is to keep all variables.
+#' @return A tibble with selected variables of the microdata, including the necessary survey design ones.
+#' @note For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
+#' @seealso \link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflators variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
 #' @examples
-#' input_path <- pnadc_example("input_example.txt")
-#' data_path <- pnadc_example("exampledata.txt")
-#' pnadc.df <- read_pnadc(data_path,input_path,vars="VD4002")
+#' input_path <- pnadc_example(path="input_example.txt")
+#' data_path <- pnadc_example(path="exampledata.txt")
+#' pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
 #' @export
 
-read_pnadc <- function(microdata,input_txt,vars=NULL) {
-  X1=X2=X3=start=end=NULL
-  ########### reading SAS input
-  input <- suppressWarnings(suppressMessages({readr::read_table2(input_txt,col_names = F) %>%
-    subset(substr(X1, 1, 1) == "@") %>%
-    dplyr::mutate(type=ifelse(substr(X3, 1, 1) == "$","c","d"),
-           start=as.numeric(gsub("@", "", X1)),
-           X3=as.integer(chartr("$", " ", X3)),
-           end=start+X3-1)}))
-
-  ########## creating columns specification
-  if(!is.null(vars)){
-    if(any(!(vars %in% input$X2))) {
-      missvar=vars[!(vars %in% input$X2)]
-      warning(paste("Variables", paste(missvar,collapse = ", "), "not present in dataset\n"))
-      }
-    input %<>% subset(X2 %in% c("UPA","Estrato","V1027","posest","V1029","V1031","V1030",vars))
+read_pnadc <- function(microdata, input_txt, vars = NULL) {
+  X1 = X2 = X3 = start = end = NULL
+  input <- suppressWarnings(suppressMessages({readr::read_table2(input_txt, col_names=FALSE) %>% subset(substr(X1, 1, 1) == "@") %>%
+    dplyr::mutate(type=ifelse(substr(X3, 1, 1) == "$","c","d"), start=as.numeric(gsub("@", "", X1)), X3=as.integer(chartr("$", " ", X3)), end=start+X3-1)}))
+  if (!is.null(vars)) {
+    if (any(!(vars %in% input$X2))) {
+      missvar <- vars[!(vars %in% input$X2)]
+      warning(paste("Variables", paste(missvar, collapse=", "), "not present in microdata.\n"))
+    }
+    input %<>% subset(X2 %in% c("Ano", "Trimestre", "UF", "UPA", "Estrato", "V1027", "V1029", "V1031", "V1030", "posest", vars))
   }
-  columns <- input%$%
-    readr::fwf_positions(start,end,X2)
-
-  ########## reading data
-  data_pnadc <- suppressWarnings(readr::read_fwf(microdata,columns,
-                         col_types = paste0(input$type,collapse = "")))
+  columns <- input %$% readr::fwf_positions(start,end,X2)
+  data_pnadc <- suppressWarnings(readr::read_fwf(microdata,columns, col_types=paste0(input$type, collapse="")))
   return(data_pnadc)
 }

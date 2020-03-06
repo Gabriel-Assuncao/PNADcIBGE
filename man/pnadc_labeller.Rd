@@ -2,26 +2,38 @@
 % Please edit documentation in R/pnadc_labeller.R
 \name{pnadc_labeller}
 \alias{pnadc_labeller}
-\title{Label categorical variables from PNADC datasets}
+\title{Label categorical variables from PNADC microdata}
 \usage{
 pnadc_labeller(data_pnadc, dictionary.file)
 }
 \arguments{
-\item{data_pnadc}{A tibble of PNADc data read with \code{read_pnadc} function.}
+\item{data_pnadc}{A tibble of PNADC microdata read with \code{read_pnadc} function.}
 
-\item{dictionary.file}{The dictionary file for selected survey available on official website: \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/Documentacao/Dicionario_e_input.zip}}
+\item{dictionary.file}{The dictionary file for selected survey available on official website:\cr Quarter - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/Documentacao/Dicionario_e_input.zip}.\cr Annual per Interview (select a dictionary xls file, according to the appropriated interview and, then, inside the documentation folder, choose the desired year) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/}.\cr Annual per Topic (select a dictionary xls file, according to the appropriated quarter related to the topic, inside the documentation folder) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/}.}
 }
 \value{
-A tibble with the data provided from PNADc survey and its categorical variables as factors with labels.
+A tibble with the data provided from PNADC survey and its categorical variables as factors with related labels.
 }
 \description{
-Label categorical variables from PNADC datasets
+This function labels categorical variables from PNADC microdata.
+}
+\note{
+For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
 }
 \examples{
+# Using data read from disk
 input_path <- pnadc_example(path="input_example.txt")
 data_path <- pnadc_example(path="exampledata.txt")
 dictionary.path <- pnadc_example(path="dictionaryexample.xls")
 pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
 pnadc.df <- pnadc_labeller(data_pnadc=pnadc.df, dictionary.file=dictionary.path)
-
+\dontrun{
+# Downloading data
+pnadc.df2 <- get_pnadc(year=2017, quarter=4, vars="VD4002", defyear=2017, defperiod=4,
+                      labels=FALSE, deflator=FALSE, design=FALSE, savedir=tempdir())
+dictionary.path2 <- pnadc_example(path="dictionaryexample.xls")
+pnadc.df2 <- pnadc_labeller(data_pnadc=pnadc.df2, dictionary.file=dictionary.path2)}
+}
+\seealso{
+\link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflators variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
 }
