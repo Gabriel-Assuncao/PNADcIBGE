@@ -2,10 +2,10 @@
 #' @description This function labels categorical variables from PNADC microdata.
 #' @import survey readr dplyr magrittr RCurl utils timeDate readxl tibble
 #' @param data_pnadc A tibble of PNADC microdata read with \code{read_pnadc} function.
-#' @param dictionary.file The dictionary file for selected survey available on official website:\cr Quarter - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/Documentacao/Dicionario_e_input.zip}.\cr Annual per Interview (select a dictionary xls file, according to the appropriated interview and, then, inside the documentation folder, choose the desired year) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/}.\cr Annual per Topic (select a dictionary xls file, according to the appropriated quarter related to the topic, inside the documentation folder) - \url{ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/}.
+#' @param dictionary.file The dictionary file for selected survey available on official website:\cr Quarter (select the dictionary and input zip file) - ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/Documentacao/.\cr Annual per Interview (select a dictionary xls file, according to the appropriated interview and, then, inside the documentation folder, choose the desired year) - ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/.\cr Annual per Topic (select a dictionary xls file, according to the appropriated quarter related to the topic, inside the documentation folder) - ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/.
 #' @return A tibble with the data provided from PNADC survey and its categorical variables as factors with related labels.
 #' @note For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
-#' @seealso \link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflators variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
+#' @seealso \link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
 #' @examples
 #' # Using data read from disk
 #' input_path <- pnadc_example(path="input_example.txt")
@@ -13,7 +13,7 @@
 #' dictionary.path <- pnadc_example(path="dictionaryexample.xls")
 #' pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
 #' pnadc.df <- pnadc_labeller(data_pnadc=pnadc.df, dictionary.file=dictionary.path)
-#' \dontrun{
+#' \donttest{
 #' # Downloading data
 #' pnadc.df2 <- get_pnadc(year=2017, quarter=4, vars="VD4002", defyear=2017, defperiod=4,
 #'                       labels=FALSE, deflator=FALSE, design=FALSE, savedir=tempdir())
@@ -36,13 +36,19 @@ pnadc_labeller <- function(data_pnadc, dictionary.file) {
         codcurrent <- dictionary$X__3[i]
       }
     }
-    notlabel <- c("Ano", "Trimestre", "UPA", "Estrato", "V1008",
-                  "V1014", "V1016", "posest", "V2003", "V2008", "V20081",
-                  "V20082", "V40081", "V40082", "V40083", "V4010", "V4013",
+    notlabel <- c("Ano", "Trimestre", "UPA", "Estrato", "V1008", "V1014", "V1016",
+                  "V1027", "V1028", "V1029", "V1030", "V1031", "V1032", "posest",
+                  "V2003", "V2008", "V20081", "V20082",
+                  "V40081", "V40082", "V40083", "V4010", "V4013",
                   "V4041", "V4044", "V4075A1", "VD4031", "VD4035",
-                  "V401511", "V401512", "V40161", "V40162", "V40163", "V401711",
-                  "V40181", "V40182", "V40183", "Habitual", "Efetivo",
-                  "CO1", "CO1e", "CO2", "CO2e", "CO3")
+                  "V401511", "V401512", "V40161", "V40162", "V40163",
+                  "V401711", "V40181", "V40182", "V40183", "S08002",
+                  "S080062", "S080063", "S08007", "S08008", "S080091",
+                  "S080192", "S080193", "S08020", "S08021", "S080221",
+                  "S080322", "S080323", "S08033", "S08034", "S080351",
+                  "S080442", "S0804431", "S080444", "S08044B",
+                  "S080462", "S0804631", "S080464", "S08046B",
+                  "Habitual", "Efetivo", "CO1", "CO1e", "CO2", "CO2e", "CO3")
     vars <- names(data_pnadc)
     varsc <- vars[sapply(data_pnadc, class) == "character"]
     varsf <- setdiff(varsc, notlabel)
