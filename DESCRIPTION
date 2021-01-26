@@ -1,17 +1,17 @@
 Package: PNADcIBGE
 Type: Package
 Title: Downloading, Reading and Analysing PNADC Microdata
-Version: 0.6.1
+Version: 0.6.2
 Authors@R: c(person("Douglas", "Braga", email = "pacotesipd@ibge.gov.br",
                   role = c("aut")),
              person("Gabriel", "Assuncao", email = "pacotesipd@ibge.gov.br",
                   role = c("aut", "cre")),
              person("Luna", "Hidalgo", email = "pacotesipd@ibge.gov.br",
                   role = c("ctb")))
-Description: Provides tools for downloading, reading, and analysing the PNADC
-	household survey from Brazilian Institute of Geography and Statistics - IBGE.
+Description: Provides tools for downloading, reading and analysing the PNADC,
+	a household survey from Brazilian Institute of Geography and Statistics - IBGE.
 	The data must be downloaded from the official website <https://www.ibge.gov.br/>. 
-	Further analyses must be made using package 'survey'.
+	Further analysis must be made using package 'survey'.
 Depends: R (>= 3.2.0)
 Imports: survey, readr, dplyr, magrittr, RCurl, utils, timeDate,
         readxl, tibble
@@ -25,6 +25,6 @@ Author: Douglas Braga [aut],
   Gabriel Assuncao [aut, cre],
   Luna Hidalgo [ctb]
 Maintainer: Gabriel Assuncao <pacotesipd@ibge.gov.br>
-Packaged: 2020-12-11 17:12:10 UTC; gabriel.assuncao
+Packaged: 2021-01-26 00:12:25 UTC; gabriel.assuncao
 Repository: CRAN
-Date/Publication: 2020-12-11 22:10:07 UTC
+Date/Publication: 2021-01-26 06:30:02 UTC

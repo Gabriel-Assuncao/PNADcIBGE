@@ -27,7 +27,7 @@ get_pnadc(
 
 \item{topic}{The quarter related to the topic of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. Using this option will get annual per topic data. If \code{NULL}, \code{quarter} or \code{interview} number must be provided.}
 
-\item{vars}{Vector of variable names to be kept for analysys. Default is to keep all variables.}
+\item{vars}{Vector of variable names to be kept for analysis. Default is to keep all variables.}
 
 \item{defyear}{The year of the deflator data to be downloaded for annual microdata. Must be a number between 2017 and the last available year. Vector not accepted. If \code{NULL}, the deflator year will be defined as the last year available for interview microdata, or as equal to \code{year} for topic microdata. When \code{quarter} is defined, this argument will be ignored. This argument will be used only if \code{deflator} was set as \code{TRUE}.}
 
