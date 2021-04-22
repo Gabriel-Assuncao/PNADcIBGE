@@ -1,6 +1,6 @@
 #' Read PNADC microdata
 #' @description This function reads PNADC microdata.
-#' @import survey readr dplyr magrittr RCurl utils timeDate readxl tibble
+#' @import survey readr dplyr magrittr projmgr httr RCurl utils timeDate readxl tibble
 #' @param microdata A text file containing microdata from PNADC survey, available on official website:\cr Quarter (select a microdata file, according to the appropriated year and, then, quarter) - \url{https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/}.\cr Annual per Interview (select a microdata file, according to the appropriated interview and, then, inside the data folder, choose the desired year) - \url{https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/}.\cr Annual per Topic (select a microdata file, according to the appropriated quarter related to the topic and, then, inside the data folder, choose the desired year) - \url{https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/}.
 #' @param input_txt A text file, related to the microdata, containing the input script for SAS, available on official website:\cr Quarter (select the dictionary and input zip file) - \url{https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/Documentacao/}.\cr Annual per Interview (select a input txt file, according to the appropriated interview and, then, inside the documentation folder, choose the desired year) - \url{https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/}.\cr Annual per Topic (select a input txt file, according to the appropriated quarter related to the topic, inside the documentation folder) - \url{https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/}.
 #' @param vars Vector of variable names to be kept for analysis. Default is to keep all variables.
@@ -20,7 +20,7 @@ read_pnadc <- function(microdata, input_txt, vars = NULL) {
   if (!is.null(vars)) {
     if (any(!(vars %in% input$X2))) {
       missvar <- vars[!(vars %in% input$X2)]
-      warning(paste("Variables", paste(missvar, collapse=", "), "not present in microdata.\n"))
+      message(paste("Variables", paste(missvar, collapse=", "), "not present in microdata.\n"))
     }
     input %<>% subset(X2 %in% c("Ano", "Trimestre", "UF", "UPA", "Estrato", "V1008", "V1027", "V1029", "V1030", "V1031", "posest", "V2003", vars))
   }

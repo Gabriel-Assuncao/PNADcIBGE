@@ -30,14 +30,14 @@ pnadc.df <- pnadc_deflator(data_pnadc=pnadc.df, deflator.file=deflator.path)
 \donttest{
 pnadc.svy <- pnadc_design(data_pnadc=pnadc.df)
 # Calculating unemployment rate
-survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)}
+if (!is.null(pnadc.svy)) survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)}
 \donttest{
 # Downloading data
 pnadc.df2 <- get_pnadc(year=2017, quarter=4, vars="VD4002", defyear=2017, defperiod=4,
                       labels=TRUE, deflator=TRUE, design=FALSE, savedir=tempdir())
 pnadc.svy2 <- pnadc_design(data_pnadc=pnadc.df2)
 # Calculating unemployment rate
-survey::svymean(x=~VD4002, design=pnadc.svy2, na.rm=TRUE)}
+if (!is.null(pnadc.svy2)) survey::svymean(x=~VD4002, design=pnadc.svy2, na.rm=TRUE)}
 }
 \seealso{
 \link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.

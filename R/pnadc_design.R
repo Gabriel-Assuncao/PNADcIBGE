@@ -1,6 +1,6 @@
 #' Create PNADC survey object with its sample design
 #' @description This function creates PNADC survey object with its sample design for analysis using \code{survey} package functions.
-#' @import survey readr dplyr magrittr RCurl utils timeDate readxl tibble
+#' @import survey readr dplyr magrittr projmgr httr RCurl utils timeDate readxl tibble
 #' @param data_pnadc A tibble of PNADC microdata read with \code{read_pnadc} function.
 #' @return An object of class \code{survey.design} with the data from PNADC and its sample design.
 #' @note For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
@@ -17,14 +17,14 @@
 #' \donttest{
 #' pnadc.svy <- pnadc_design(data_pnadc=pnadc.df)
 #' # Calculating unemployment rate
-#' survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)}
+#' if (!is.null(pnadc.svy)) survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)}
 #' \donttest{
 #' # Downloading data
 #' pnadc.df2 <- get_pnadc(year=2017, quarter=4, vars="VD4002", defyear=2017, defperiod=4,
 #'                       labels=TRUE, deflator=TRUE, design=FALSE, savedir=tempdir())
 #' pnadc.svy2 <- pnadc_design(data_pnadc=pnadc.df2)
 #' # Calculating unemployment rate
-#' survey::svymean(x=~VD4002, design=pnadc.svy2, na.rm=TRUE)}
+#' if (!is.null(pnadc.svy2)) survey::svymean(x=~VD4002, design=pnadc.svy2, na.rm=TRUE)}
 #' @export
 
 pnadc_design <- function(data_pnadc) {
@@ -46,12 +46,12 @@ pnadc_design <- function(data_pnadc) {
       }
     }
     else {
-      warning("Weight variables required for sample design are missing.")
+      message("Weight variables required for sample design are missing.")
       data_posterior <- data_pnadc
     }
   }
   else {
-    warning("Sample design was already defined for microdata, so applying another design is not possible.")
+    message("The microdata object is not of the tibble class or sample design was already defined for microdata, so applying another design is not possible.")
     data_posterior <- data_pnadc
   }
   return(data_posterior)

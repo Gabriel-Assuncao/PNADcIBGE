@@ -54,13 +54,13 @@ For more information, visit the survey official website <\url{https://www.ibge.g
 \donttest{
 pnadc.svy <- get_pnadc(year=2017, quarter=4, vars=c("VD4001","VD4002"), defyear=2017, defperiod=4,
                        labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
-survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)
+if (!is.null(pnadc.svy)) survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)
 pnadc.svy2 <- get_pnadc(year=2017, interview=5, vars=c("V4112","V4121B"), defyear=2017, defperiod=4,
                         labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
-survey::svymean(x=~V4121B, design=pnadc.svy2, na.rm=TRUE)
+if (!is.null(pnadc.svy2)) survey::svymean(x=~V4121B, design=pnadc.svy2, na.rm=TRUE)
 pnadc.svy3 <- get_pnadc(year=2017, topic=4, vars=c("S01022","S01025"), defyear=2017, defperiod=4,
                         labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
-survey::svymean(x=~S01022, design=pnadc.svy3, na.rm=TRUE)}
+if (!is.null(pnadc.svy3)) survey::svymean(x=~S01022, design=pnadc.svy3, na.rm=TRUE)}
 }
 \seealso{
 \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.

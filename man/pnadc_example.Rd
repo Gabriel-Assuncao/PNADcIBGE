@@ -13,7 +13,7 @@ pnadc_example(path = NULL)
 A vector with names of all the available quarter PNADC example files or the path for specific requested quarter PNADC example file.
 }
 \description{
-This function provides the path of the quarter PNADC example files, loaded with this package.
+This function provides the path of the microdata from quarter 4 of year 2017 of the PNADC example files, loaded with this package.
 }
 \note{
 For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
