@@ -19,13 +19,16 @@
 #' \donttest{
 #' pnadc.svy <- get_pnadc(year=2017, quarter=4, vars=c("VD4001","VD4002"), defyear=2017, defperiod=4,
 #'                        labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
+#' # Calculating proportion of employed and unemployed people
 #' if (!is.null(pnadc.svy)) survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)
 #' pnadc.svy2 <- get_pnadc(year=2017, interview=5, vars=c("V4112","V4121B"), defyear=2017, defperiod=4,
 #'                         labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
+#' # Calculating average hours dedicated to the care of people or household chores
 #' if (!is.null(pnadc.svy2)) survey::svymean(x=~V4121B, design=pnadc.svy2, na.rm=TRUE)
-#' pnadc.svy3 <- get_pnadc(year=2017, topic=4, vars=c("S01022","S01025"), defyear=2017, defperiod=4,
+#' pnadc.svy3 <- get_pnadc(year=2017, topic=4, vars=c("S07006","S07007"), defyear=2017, defperiod=4,
 #'                         labels=TRUE, deflator=TRUE, design=TRUE, savedir=tempdir())
-#' if (!is.null(pnadc.svy3)) survey::svymean(x=~S01022, design=pnadc.svy3, na.rm=TRUE)}
+#' # Calculating proportion of cell phone for personal use with internet access
+#' if (!is.null(pnadc.svy3)) survey::svymean(x=~S07007, design=pnadc.svy3, na.rm=TRUE)}
 #' @export
 
 get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars = NULL, defyear = NULL, defperiod = NULL, 
@@ -62,29 +65,32 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
       message("Quarter number must be an integer from 1 to 4.")
       return(NULL)
     }
-    ftpdir <- ("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/")
+    ftpdir <- ("https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/")
     if (!projmgr::check_internet()) {
       message("The internet connection is unavailable.")
       return(NULL)
     }
-    if (httr::http_error(GET(ftpdir, timeout(60)))) {
+    if (httr::http_error(httr::GET(ftpdir, httr::timeout(60)))) {
       message("The microdata server is unavailable.")
       return(NULL)
     }
+    options(timeout=max(300, getOption("timeout")))
     ftpdata <- paste0(ftpdir, year, "/")
-    datayear <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(ftpdata, dirlistonly=TRUE)), "\n"))
+    datayear <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(ftpdata, dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".zip"))
     dataname <- datayear[which(startsWith(datayear, paste0("PNADC_0", quarter, year)))]
     if (length(dataname) == 0) {
       message("Data unavailable for selected quarter and year.")
       return(NULL)
     }
-    docfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao/"), dirlistonly=TRUE)), "\n"))
-    inputzip <- docfiles[which(startsWith(docfiles, "Dicionario_e_input"))]
-    defzip <- docfiles[which(startsWith(docfiles, "Deflatores"))]
-    utils::download.file(url=paste0(ftpdir, "Documentacao/", inputzip), destfile=paste0(savedir, "/Dicionario_e_input.zip"), mode="wb")
-    utils::unzip(zipfile=paste0(savedir, "/Dicionario_e_input.zip"), exdir=savedir)
+    else {
+      dataname <- paste0(dataname, ".zip")
+    }
     utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
     utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+    docfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".zip"))
+    inputzip <- paste0(docfiles[which(startsWith(docfiles, "Dicionario_e_input"))], ".zip")
+    utils::download.file(url=paste0(ftpdir, "Documentacao/", inputzip), destfile=paste0(savedir, "/Dicionario_e_input.zip"), mode="wb")
+    utils::unzip(zipfile=paste0(savedir, "/Dicionario_e_input.zip"), exdir=savedir)
     microdataname <- dir(savedir, pattern=paste0("^PNADC_0", quarter, year, ".*\\.txt$"), ignore.case=FALSE)
     microdatafile <- paste0(savedir, "/", microdataname)
     microdatafile <- rownames(file.info(microdatafile)[order(file.info(microdatafile)$ctime),])[length(microdatafile)]
@@ -105,6 +111,7 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
     }
     if (deflator == TRUE) {
       if (exists("pnadc_deflator", where="package:PNADcIBGE", mode="function")) {
+        defzip <- paste0(docfiles[which(startsWith(docfiles, "Deflatores"))], ".zip")
         utils::download.file(url=paste0(ftpdir, "Documentacao/", defzip), destfile=paste0(savedir, "/Deflatores.zip"), mode="wb")
         utils::unzip(zipfile=paste0(savedir, "/Deflatores.zip"), exdir=savedir)
         defname <- dir(savedir, pattern=paste0("^deflator_PNADC_.*\\_trimestral_.*\\.xls$"), ignore.case=FALSE)
@@ -122,40 +129,36 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
       message("Interview number must be a integer from 1 to 5.")
       return(NULL)
     }
-    ftpdir <- ("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/")
+    ftpdir <- ("https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/")
     if (!projmgr::check_internet()) {
       message("The internet connection is unavailable.")
       return(NULL)
     }
-    if (httr::http_error(GET(ftpdir, timeout(60)))) {
+    if (httr::http_error(httr::GET(ftpdir, httr::timeout(60)))) {
       message("The microdata server is unavailable.")
       return(NULL)
     }
+    options(timeout=max(300, getOption("timeout")))
     ftpdata <- paste0(ftpdir, "Visita_", interview, "/Dados/")
-    datayear <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(ftpdata, dirlistonly=TRUE)), "\n"))
-    yrint_list <- regmatches(datayear, gregexpr("[[:digit:]]+", datayear))
-    dataname <- NULL
-    for (i in 1:length(datayear)) {
-      if (as.numeric(yrint_list[[i]])[1] == year & as.numeric(yrint_list[[i]])[2] == interview) {
-        dataname <- datayear[i]
-      }
-    }
+    datayear <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(ftpdata, dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".zip"))
+    dataname <- datayear[which(startsWith(datayear, paste0("PNADC_", year, "_visita", interview)))]
     if (length(dataname) == 0) {
       message("Data unavailable for selected interview and year.")
       return(NULL)
     }
-    docfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Visita_", interview, "/Documentacao/"), dirlistonly=TRUE)), "\n"))
-    if (year < 2015) {
-      inputpre <- docfiles[which(startsWith(docfiles, paste0("input_PNADC_2012_a_2014_visita", interview)))]
-      dicpre <- docfiles[which(startsWith(docfiles, paste0("dicionario_PNADC_microdados_2012_a_2014_visita", interview)))]
-    }
     else {
-      inputpre <- docfiles[which(startsWith(docfiles, paste0("input_PNADC_", year, "_visita", interview)))]
-      dicpre <- docfiles[which(startsWith(docfiles, paste0("dicionario_PNADC_microdados_", year, "_visita", interview)))]
+      dataname <- paste0(dataname, ".zip")
     }
     utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
-    utils::download.file(url=paste0(ftpdir, "Visita_", interview, "/Documentacao/", inputpre), destfile=paste0(savedir, "/", inputpre), mode="wb")
     utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+    docfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Visita_", interview, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".txt"))
+    if (year < 2015) {
+      inputpre <- paste0(docfiles[which(startsWith(docfiles, paste0("input_PNADC_2012_a_2014_visita", interview)))], ".txt")
+    }
+    else {
+      inputpre <- paste0(docfiles[which(startsWith(docfiles, paste0("input_PNADC_", year, "_visita", interview)))], ".txt")
+    }
+    utils::download.file(url=paste0(ftpdir, "Visita_", interview, "/Documentacao/", inputpre), destfile=paste0(savedir, "/", inputpre), mode="wb")
     microdataname <- dir(savedir, pattern=paste0("^PNADC_", year, "_visita", interview, ".*\\.txt$"), ignore.case=FALSE)
     microdatafile <- paste0(savedir, "/", microdataname)
     microdatafile <- rownames(file.info(microdatafile)[order(file.info(microdatafile)$ctime),])[length(microdatafile)]
@@ -165,6 +168,13 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
     data_pnadc <- PNADcIBGE::read_pnadc(microdata=microdatafile, input_txt=inputfile, vars=vars)
     if (labels == TRUE) {
       if (exists("pnadc_labeller", where="package:PNADcIBGE", mode="function")) {
+        dicfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Visita_", interview, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".xls"))
+        if (year < 2015) {
+          dicpre <- paste0(dicfiles[which(startsWith(dicfiles, paste0("dicionario_PNADC_microdados_2012_a_2014_visita", interview)))], ".xls")
+        }
+        else {
+          dicpre <- paste0(dicfiles[which(startsWith(dicfiles, paste0("dicionario_PNADC_microdados_", year, "_visita", interview)))], ".xls")
+        }
         utils::download.file(url=paste0(ftpdir, "Visita_", interview, "/Documentacao/", dicpre), destfile=paste0(savedir, "/", dicpre), mode="wb")
         dicname <- dir(savedir, pattern=paste0("^dicionario_PNADC_microdados_.*\\_visita", interview, ".*\\.xls$"), ignore.case=FALSE)
         dicfile <- paste0(savedir, "/", dicname)
@@ -177,7 +187,7 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
     }
     if (deflator == TRUE) {
       if (exists("pnadc_deflator", where="package:PNADcIBGE", mode="function")) {
-        arcfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao_Geral/"), dirlistonly=TRUE)), "\n"))
+        arcfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao_Geral/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".xls"))
         if (is.null(defyear)) {
           defyear <- timeDate::getRmetricsOptions("currentYear") - 1
           message(paste0("Deflator year was not provided, so deflator year was set to ", defyear, "."))
@@ -190,11 +200,11 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
           defyear <- timeDate::getRmetricsOptions("currentYear") - 1
           message(paste0("Deflator year must be greater or equal to 2017 and cannot be greater or equal than current year, so deflator year was changed to ", defyear, "."))
         }
-        if (identical(arcfiles[which(startsWith(arcfiles, paste0("deflator_PNADC_", defyear)))], character(0))) {
+        if (length(arcfiles[which(startsWith(arcfiles, paste0("deflator_PNADC_", defyear)))]) == 0) {
           defyear <- defyear - 1
           message(paste0("Deflator data unavailable for selected year, so deflator year was changed to ", defyear, "."))
         }
-        defpre <- arcfiles[which(startsWith(arcfiles, paste0("deflator_PNADC_", defyear)))]
+        defpre <- paste0(arcfiles[which(startsWith(arcfiles, paste0("deflator_PNADC_", defyear)))], ".xls")
         utils::download.file(url=paste0(ftpdir, "Documentacao_Geral/", defpre), destfile=paste0(savedir, "/", defpre), mode="wb")
         defname <- dir(savedir, pattern=paste0("^deflator_PNADC_", defyear, ".*\\.xls$"), ignore.case=FALSE)
         deffile <- paste0(savedir, "/", defname)
@@ -211,34 +221,31 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
       message("Topic number must be a integer from 1 to 4.")
       return(NULL)
     }
-    ftpdir <- ("ftp://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/")
+    ftpdir <- ("https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/")
     if (!projmgr::check_internet()) {
       message("The internet connection is unavailable.")
       return(NULL)
     }
-    if (httr::http_error(GET(ftpdir, timeout(60)))) {
+    if (httr::http_error(httr::GET(ftpdir, httr::timeout(60)))) {
       message("The microdata server is unavailable.")
       return(NULL)
     }
+    options(timeout=max(300, getOption("timeout")))
     ftpdata <- paste0(ftpdir, "Trimestre_", topic, "/Dados/")
-    datayear <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(ftpdata, dirlistonly=TRUE)), "\n"))
-    yrint_list <- regmatches(datayear, gregexpr("[[:digit:]]+", datayear))
-    dataname <- NULL
-    for (i in 1:length(datayear)) {
-      if (as.numeric(yrint_list[[i]])[1] == year & as.numeric(yrint_list[[i]])[2] == topic) {
-        dataname <- datayear[i]
-      }
-    }
+    datayear <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(ftpdata, dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".zip"))
+    dataname <- datayear[which(startsWith(datayear, paste0("PNADC_", year, "_trimestre", topic)))]
     if (length(dataname) == 0) {
       message("Data unavailable for selected topic and year.")
       return(NULL)
     }
-    docfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", topic, "/Documentacao/"), dirlistonly=TRUE)), "\n"))
-    inputpre <- docfiles[which(startsWith(docfiles, paste0("input_PNADC_trimestre", topic)))]
-    dicpre <- docfiles[which(startsWith(docfiles, paste0("dicionario_PNADC_microdados_trimestre", topic)))]
+    else {
+      dataname <- paste0(dataname, ".zip")
+    }
     utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
-    utils::download.file(url=paste0(ftpdir, "Trimestre_", topic, "/Documentacao/", inputpre), destfile=paste0(savedir, "/", inputpre), mode="wb")
     utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+    docfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", topic, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".txt"))
+    inputpre <- paste0(docfiles[which(startsWith(docfiles, paste0("input_PNADC_trimestre", topic)))], ".txt")
+    utils::download.file(url=paste0(ftpdir, "Trimestre_", topic, "/Documentacao/", inputpre), destfile=paste0(savedir, "/", inputpre), mode="wb")
     microdataname <- dir(savedir, pattern=paste0("^PNADC_", year, "_trimestre", topic, ".*\\.txt$"), ignore.case=FALSE)
     microdatafile <- paste0(savedir, "/", microdataname)
     microdatafile <- rownames(file.info(microdatafile)[order(file.info(microdatafile)$ctime),])[length(microdatafile)]
@@ -248,6 +255,8 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
     data_pnadc <- PNADcIBGE::read_pnadc(microdata=microdatafile, input_txt=inputfile, vars=vars)
     if (labels == TRUE) {
       if (exists("pnadc_labeller", where="package:PNADcIBGE", mode="function")) {
+        dicfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", topic, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".xls"))
+        dicpre <- paste0(dicfiles[which(startsWith(dicfiles, paste0("dicionario_PNADC_microdados_trimestre", topic)))], ".xls")
         utils::download.file(url=paste0(ftpdir, "Trimestre_", topic, "/Documentacao/", dicpre), destfile=paste0(savedir, "/", dicpre), mode="wb")
         dicname <- dir(savedir, pattern=paste0("^dicionario_PNADC_microdados_trimestre", topic, ".*\\.xls$"), ignore.case=FALSE)
         dicfile <- paste0(savedir, "/", dicname)
@@ -260,7 +269,7 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
     }
     if (deflator == TRUE) {
       if (exists("pnadc_deflator", where="package:PNADcIBGE", mode="function")) {
-        arcfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao_Geral/"), dirlistonly=TRUE)), "\n"))
+        arcfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao_Geral/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".xls"))
         if (is.null(defyear) | is.null(defperiod)) {
           defyear <- year
           defperiod <- topic
@@ -286,13 +295,14 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
           defperiod <- topic
           message(paste0("Deflator period must be greater or equal to 1 and cannot be greater than 4, so deflator period was changed to ", defperiod, "."))
         }
-        perfiles <- unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", defperiod, "/Documentacao/"), dirlistonly=TRUE)), "\n"))
-        if (identical(perfiles[which(startsWith(perfiles, paste0("deflator_PNADC_", defyear, "_trimestre", defperiod)))], character(0))) {
+        perfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", defperiod, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".xls"))
+        if (length(perfiles[which(startsWith(perfiles, paste0("deflator_PNADC_", defyear, "_trimestre", defperiod)))]) == 0) {
           defyear <- year
           defperiod <- topic
+          perfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", defperiod, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".xls"))
           message(paste0("Deflator data unavailable for selected year and period, so deflator year was changed to ", defyear, " and period was changed to ", defperiod, "."))
         }
-        defpre <- perfiles[which(startsWith(perfiles, paste0("deflator_PNADC_", defyear, "_trimestre", defperiod)))]
+        defpre <- paste0(perfiles[which(startsWith(perfiles, paste0("deflator_PNADC_", defyear, "_trimestre", defperiod)))], ".xls")
         utils::download.file(url=paste0(ftpdir, "Trimestre_", defperiod, "/Documentacao/", defpre), destfile=paste0(savedir, "/", defpre), mode="wb")
         defname <- dir(savedir, pattern=paste0("^deflator_PNADC_", defyear, "_trimestre", defperiod, ".*\\.xls$"), ignore.case=FALSE)
         deffile <- paste0(savedir, "/", defname)

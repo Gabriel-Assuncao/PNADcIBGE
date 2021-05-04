@@ -10,7 +10,7 @@
 #' @examples
 #' input_path <- pnadc_example(path="input_example.txt")
 #' data_path <- pnadc_example(path="exampledata.txt")
-#' pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
+#' pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars=c("VD4001","VD4002"))
 #' @export
 
 read_pnadc <- function(microdata, input_txt, vars = NULL) {

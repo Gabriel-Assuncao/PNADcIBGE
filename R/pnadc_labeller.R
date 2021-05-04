@@ -11,11 +11,11 @@
 #' input_path <- pnadc_example(path="input_example.txt")
 #' data_path <- pnadc_example(path="exampledata.txt")
 #' dictionary.path <- pnadc_example(path="dictionaryexample.xls")
-#' pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
+#' pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars=c("VD4001","VD4002"))
 #' pnadc.df <- pnadc_labeller(data_pnadc=pnadc.df, dictionary.file=dictionary.path)
 #' \donttest{
 #' # Downloading data
-#' pnadc.df2 <- get_pnadc(year=2017, quarter=4, vars="VD4002", defyear=2017, defperiod=4,
+#' pnadc.df2 <- get_pnadc(year=2017, quarter=4, vars=c("VD4001","VD4002"), defyear=2017, defperiod=4,
 #'                       labels=FALSE, deflator=FALSE, design=FALSE, savedir=tempdir())
 #' dictionary.path2 <- pnadc_example(path="dictionaryexample.xls")
 #' pnadc.df2 <- pnadc_labeller(data_pnadc=pnadc.df2, dictionary.file=dictionary.path2)}

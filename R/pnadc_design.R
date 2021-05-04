@@ -11,19 +11,19 @@
 #' data_path <- pnadc_example(path="exampledata.txt")
 #' dictionary.path <- pnadc_example(path="dictionaryexample.xls")
 #' deflator.path <- pnadc_example(path="deflatorexample.xls")
-#' pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars="VD4002")
+#' pnadc.df <- read_pnadc(microdata=data_path, input_txt=input_path, vars=c("VD4001","VD4002"))
 #' pnadc.df <- pnadc_labeller(data_pnadc=pnadc.df, dictionary.file=dictionary.path)
 #' pnadc.df <- pnadc_deflator(data_pnadc=pnadc.df, deflator.file=deflator.path)
 #' \donttest{
 #' pnadc.svy <- pnadc_design(data_pnadc=pnadc.df)
-#' # Calculating unemployment rate
+#' # Calculating proportion of employed and unemployed people
 #' if (!is.null(pnadc.svy)) survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)}
 #' \donttest{
 #' # Downloading data
-#' pnadc.df2 <- get_pnadc(year=2017, quarter=4, vars="VD4002", defyear=2017, defperiod=4,
+#' pnadc.df2 <- get_pnadc(year=2017, quarter=4, vars=c("VD4001","VD4002"), defyear=2017, defperiod=4,
 #'                       labels=TRUE, deflator=TRUE, design=FALSE, savedir=tempdir())
 #' pnadc.svy2 <- pnadc_design(data_pnadc=pnadc.df2)
-#' # Calculating unemployment rate
+#' # Calculating proportion of employed and unemployed people
 #' if (!is.null(pnadc.svy2)) survey::svymean(x=~VD4002, design=pnadc.svy2, na.rm=TRUE)}
 #' @export
 
