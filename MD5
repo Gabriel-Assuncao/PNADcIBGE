@@ -1,12 +1,12 @@
-e2b07fd1ec56e890512089ff2d5c42fd *DESCRIPTION
+cc1548376cc039c1d1a76a52ee217819 *DESCRIPTION
 4e8ccb39b51f2e4981a2e79fa43b4de0 *NAMESPACE
 073bbe5d0c88b2cf4ee9045579028756 *R/example.R
-d5c576bad49f564bfa6a14c20d199459 *R/get_pnadc.R
+25d8500861fb85739bedc5523f5a9f47 *R/get_pnadc.R
 b51b82d743c8ee587e13b8c450f526e0 *R/pnadc_deflator.R
 b65a8f7285296c95a4d1f639a4168e66 *R/pnadc_design.R
 4d796c20c51f87222ba4ec6fc1bb9cbc *R/pnadc_labeller.R
 53887ae0a5a6412bddc033861033d9ef *R/read_pnadc.R
-de5f8eba02cdc1eab045e7b2f180d3a4 *README.md
+9436a2e7a9157fdc87c02ed9f7a6e5cc *README.md
 9ccca52574f68fe6860f2b395702f33a *inst/extdata/deflatorexample.xls
 d10e8245d66fa52552a44fd4f013c266 *inst/extdata/dictionaryexample.xls
 52efec701f05546c2964b8c9c77d8cfc *inst/extdata/exampledata.txt

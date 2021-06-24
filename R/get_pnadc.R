@@ -82,6 +82,10 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
       message("Data unavailable for selected quarter and year.")
       return(NULL)
     }
+    else if (length(dataname) > 1) {
+      message("There is more than one file available for the requested microdata, please contact the package maintainer.")
+      return(NULL)
+    }
     else {
       dataname <- paste0(dataname, ".zip")
     }
@@ -144,6 +148,10 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
     dataname <- datayear[which(startsWith(datayear, paste0("PNADC_", year, "_visita", interview)))]
     if (length(dataname) == 0) {
       message("Data unavailable for selected interview and year.")
+      return(NULL)
+    }
+    else if (length(dataname) > 1) {
+      message("There is more than one file available for the requested microdata, please contact the package maintainer.")
       return(NULL)
     }
     else {
@@ -236,6 +244,10 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
     dataname <- datayear[which(startsWith(datayear, paste0("PNADC_", year, "_trimestre", topic)))]
     if (length(dataname) == 0) {
       message("Data unavailable for selected topic and year.")
+      return(NULL)
+    }
+    else if (length(dataname) > 1) {
+      message("There is more than one file available for the requested microdata, please contact the package maintainer.")
       return(NULL)
     }
     else {
