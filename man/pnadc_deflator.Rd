@@ -37,5 +37,5 @@ deflator.path2 <- pnadc_example(path="deflatorexample.xls")
 pnadc.df2 <- pnadc_deflator(data_pnadc=pnadc.df2, deflator.file=deflator.path2)}
 }
 \seealso{
-\link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
+\link[PNADcIBGE]{get_pnadc} for downloading, labeling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labeling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC toy example files.
 }

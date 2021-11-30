@@ -2,18 +2,18 @@
 % Please edit documentation in R/example.R
 \name{pnadc_example}
 \alias{pnadc_example}
-\title{Get the path of the quarter PNADC example files}
+\title{Get the path of the quarter PNADC toy example files}
 \usage{
 pnadc_example(path = NULL)
 }
 \arguments{
-\item{path}{Name of file. If \code{NULL}, the quarter PNADC example files names will be listed.}
+\item{path}{Name of file. If \code{NULL}, the quarter PNADC toy example files names will be listed.}
 }
 \value{
-A vector with names of all the available quarter PNADC example files or the path for specific requested quarter PNADC example file.
+A vector with names of all the available quarter PNADC toy example files or the path for specific requested quarter PNADC toy example file.
 }
 \description{
-This function provides the path of the microdata from quarter 4 of year 2017 of the PNADC example files, loaded with this package.
+This function provides the path of the microdata from quarter 4 of year 2017 of the PNADC toy example files, loaded with this package.
 }
 \note{
 For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
@@ -26,5 +26,5 @@ pnadc_example(path="dictionaryexample.xls")
 pnadc_example(path="deflatorexample.xls")
 }
 \seealso{
-\link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.
+\link[PNADcIBGE]{get_pnadc} for downloading, labeling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labeling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.
 }

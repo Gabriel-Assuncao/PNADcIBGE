@@ -1,29 +1,30 @@
 Package: PNADcIBGE
 Type: Package
-Title: Downloading, Reading and Analysing PNADC Microdata
-Version: 0.6.5
+Title: Downloading, Reading and Analyzing PNADC Microdata
+Version: 0.7.0
 Authors@R: c(person("Douglas", "Braga", email = "pacotesipd@ibge.gov.br",
                   role = c("aut")),
              person("Gabriel", "Assuncao", email = "pacotesipd@ibge.gov.br",
                   role = c("aut", "cre")),
              person("Luna", "Hidalgo", email = "pacotesipd@ibge.gov.br",
                   role = c("ctb")))
-Description: Provides tools for downloading, reading and analysing the PNADC,
+Description: Provides tools for downloading, reading and analyzing the PNADC,
 	a household survey from Brazilian Institute of Geography and Statistics - IBGE.
 	The data must be downloaded from the official website <https://www.ibge.gov.br/>. 
 	Further analysis must be made using package 'survey'.
 Depends: R (>= 3.2.0)
-Imports: survey, readr, dplyr, magrittr, projmgr, httr, RCurl, utils,
-        timeDate, readxl, tibble
-Suggests: tidyverse, convey
+Imports: dplyr, httr, magrittr, projmgr, RCurl, readr, readxl, survey,
+        tibble, timeDate, utils
+Suggests: convey, lavaan.survey, srvyr, surf, tidyverse
 License: GPL-3
 Encoding: UTF-8
-RoxygenNote: 7.0.1
+RoxygenNote: 7.1.2
 NeedsCompilation: no
 Author: Douglas Braga [aut],
   Gabriel Assuncao [aut, cre],
   Luna Hidalgo [ctb]
 Maintainer: Gabriel Assuncao <pacotesipd@ibge.gov.br>
-Packaged: 2021-06-23 21:05:22 UTC; gabriel.assuncao
+BugReports: https://github.com/Gabriel-Assuncao/PNADcIBGE/issues
+Packaged: 2021-11-29 15:12:05 UTC; gabriel.assuncao
 Repository: CRAN
-Date/Publication: 2021-06-24 05:00:13 UTC
+Date/Publication: 2021-11-30 14:20:10 UTC

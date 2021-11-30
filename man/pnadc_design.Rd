@@ -10,7 +10,7 @@ pnadc_design(data_pnadc)
 \item{data_pnadc}{A tibble of PNADC microdata read with \code{read_pnadc} function.}
 }
 \value{
-An object of class \code{survey.design} with the data from PNADC and its sample design.
+An object of class \code{survey.design} or \code{svyrep.design} with the data from PNADC and its sample design.
 }
 \description{
 This function creates PNADC survey object with its sample design for analysis using \code{survey} package functions.
@@ -40,5 +40,5 @@ pnadc.svy2 <- pnadc_design(data_pnadc=pnadc.df2)
 if (!is.null(pnadc.svy2)) survey::svymean(x=~VD4002, design=pnadc.svy2, na.rm=TRUE)}
 }
 \seealso{
-\link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
+\link[PNADcIBGE]{get_pnadc} for downloading, labeling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labeling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC toy example files.
 }

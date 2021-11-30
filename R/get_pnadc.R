@@ -1,6 +1,6 @@
 #' Download, label, deflate and create survey design object for PNADC microdata
 #' @description Core function of package. With this function only, the user can download a PNADC microdata from a year or quarter and get a sample design object ready to use with \code{survey} package functions.
-#' @import survey readr dplyr magrittr projmgr httr RCurl utils timeDate readxl tibble
+#' @import dplyr httr magrittr projmgr RCurl readr readxl survey tibble timeDate utils
 #' @param year The year of the data to be downloaded. Must be a number between 2012 and current year. Vector not accepted.
 #' @param quarter The quarter of the year of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} or \code{topic} number must be provided.
 #' @param interview The interview number of the data to be downloaded. Must be number from 1 to 5. Vector not accepted. Using this option will get annual per interview data. If \code{NULL}, \code{quarter} or \code{topic} number must be provided.
@@ -10,11 +10,11 @@
 #' @param defperiod The quarter period of the deflator data to be downloaded for annual per topic microdata. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, the deflator period will be defined as equal to \code{topic}. When \code{quarter} or \code{interview} is defined, this argument will be ignored. This argument will be used only if \code{deflator} was set as \code{TRUE}.
 #' @param labels Logical value. If \code{TRUE}, categorical variables will presented as factors with labels corresponding to the survey's dictionary.
 #' @param deflator Logical value. If \code{TRUE}, deflator variables will be available for use in the microdata.
-#' @param design Logical value. If \code{TRUE}, will return an object of class \code{survey.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.
+#' @param design Logical value. If \code{TRUE}, will return an object of class \code{survey.design} or \code{svyrep.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.
 #' @param savedir Directory to save the downloaded data. Default is to use a temporary directory.
-#' @return An object of class \code{survey.design} with the data from PNADC and its sample design, or a tibble with selected variables of the microdata, including the necessary survey design ones.
+#' @return An object of class \code{survey.design} or \code{svyrep.design} with the data from PNADC and its sample design, or a tibble with selected variables of the microdata, including the necessary survey design ones.
 #' @note For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
-#' @seealso \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
+#' @seealso \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labeling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC toy example files.
 #' @examples
 #' \donttest{
 #' pnadc.svy <- get_pnadc(year=2017, quarter=4, vars=c("VD4001","VD4002"), defyear=2017, defperiod=4,
@@ -55,7 +55,7 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
   }
   if (!dir.exists(savedir)) {
     savedir <- tempdir()
-    message(paste0("The directory provided does not exist, so the directory was set to '", tempdir()), "'.")
+    message(paste0("The directory provided does not exist, so the directory was set to '", savedir), "'.")
   }
   if (substr(savedir, nchar(savedir), nchar(savedir)) == "/" | substr(savedir, nchar(savedir), nchar(savedir)) == "\\") {
     savedir <- substr(savedir, 1, nchar(savedir)-1)
@@ -90,6 +90,10 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
       dataname <- paste0(dataname, ".zip")
     }
     utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
+    if (suppressWarnings(class(try(utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir), silent=TRUE)) == "try-error")) {
+      message("The directory defined to save the downloaded data is denied permission to overwrite the existing files, please clear or change this directory.")
+      return(NULL)
+    }
     utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
     docfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".zip"))
     inputzip <- paste0(docfiles[which(startsWith(docfiles, "Dicionario_e_input"))], ".zip")
@@ -158,6 +162,10 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
       dataname <- paste0(dataname, ".zip")
     }
     utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
+    if (suppressWarnings(class(try(utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir), silent=TRUE)) == "try-error")) {
+      message("The directory defined to save the downloaded data is denied permission to overwrite the existing files, please clear or change this directory.")
+      return(NULL)
+    }
     utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
     docfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Visita_", interview, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".txt"))
     if (year < 2015) {
@@ -254,6 +262,10 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
       dataname <- paste0(dataname, ".zip")
     }
     utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
+    if (suppressWarnings(class(try(utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir), silent=TRUE)) == "try-error")) {
+      message("The directory defined to save the downloaded data is denied permission to overwrite the existing files, please clear or change this directory.")
+      return(NULL)
+    }
     utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
     docfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", topic, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".txt"))
     inputpre <- paste0(docfiles[which(startsWith(docfiles, paste0("input_PNADC_trimestre", topic)))], ".txt")

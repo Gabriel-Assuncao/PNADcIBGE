@@ -1,11 +1,11 @@
 #' Label categorical variables from PNADC microdata
 #' @description This function labels categorical variables from PNADC microdata.
-#' @import survey readr dplyr magrittr projmgr httr RCurl utils timeDate readxl tibble
+#' @import dplyr httr magrittr projmgr RCurl readr readxl survey tibble timeDate utils
 #' @param data_pnadc A tibble of PNADC microdata read with \code{read_pnadc} function.
 #' @param dictionary.file The dictionary file for selected survey available on official website:\cr Quarter (select the dictionary and input zip file) - \url{https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Trimestral/Microdados/Documentacao/}.\cr Annual per Interview (select a dictionary xls file, according to the appropriated interview and, then, inside the documentation folder, choose the desired year) - \url{https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/}.\cr Annual per Topic (select a dictionary xls file, according to the appropriated quarter related to the topic, inside the documentation folder) - \url{https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Trimestre/}.
 #' @return A tibble with the data provided from PNADC survey and its categorical variables as factors with related labels.
 #' @note For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
-#' @seealso \link[PNADcIBGE]{get_pnadc} for downloading, labelling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
+#' @seealso \link[PNADcIBGE]{get_pnadc} for downloading, labeling, deflating and creating survey design object for PNADC microdata.\cr \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC toy example files.
 #' @examples
 #' # Using data read from disk
 #' input_path <- pnadc_example(path="input_example.txt")
@@ -36,8 +36,10 @@ pnadc_labeller <- function(data_pnadc, dictionary.file) {
         codcurrent <- dictionary$X__3[i]
       }
     }
-    notlabel <- c("Ano", "Trimestre", "UPA", "Estrato", "V1008", "V1014", "V1016",
-                  "V1027", "V1028", "V1029", "V1030", "V1031", "V1032", "posest",
+    notlabel <- c("Ano", "Trimestre", "UPA", "ID_DOMICILIO", "Estrato", "V1008", "V1014", "V1016",
+                  "V1027", "V1028", sprintf("V1028%03d", seq(1:200)), "V1029",
+                  "V1030", "V1031", "V1032", sprintf("V1032%03d", seq(1:200)),
+                  "V1033", "V1034", "posest", "posest_sxi",
                   "V2003", "V2008", "V20081", "V20082",
                   "V40081", "V40082", "V40083", "V4010", "V4013",
                   "V4041", "V4044", "V4075A1", "VD4031", "VD4035",
@@ -61,7 +63,7 @@ pnadc_labeller <- function(data_pnadc, dictionary.file) {
     }
   }
   else {
-    message("The microdata object is not of the tibble class or sample design was already defined for microdata, so labelling categorical variables is not possible.")
+    message("The microdata object is not of the tibble class or sample design was already defined for microdata, so labeling categorical variables is not possible.")
   }
   return(data_pnadc)
 }

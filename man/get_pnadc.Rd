@@ -37,12 +37,12 @@ get_pnadc(
 
 \item{deflator}{Logical value. If \code{TRUE}, deflator variables will be available for use in the microdata.}
 
-\item{design}{Logical value. If \code{TRUE}, will return an object of class \code{survey.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.}
+\item{design}{Logical value. If \code{TRUE}, will return an object of class \code{survey.design} or \code{svyrep.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.}
 
 \item{savedir}{Directory to save the downloaded data. Default is to use a temporary directory.}
 }
 \value{
-An object of class \code{survey.design} with the data from PNADC and its sample design, or a tibble with selected variables of the microdata, including the necessary survey design ones.
+An object of class \code{survey.design} or \code{svyrep.design} with the data from PNADC and its sample design, or a tibble with selected variables of the microdata, including the necessary survey design ones.
 }
 \description{
 Core function of package. With this function only, the user can download a PNADC microdata from a year or quarter and get a sample design object ready to use with \code{survey} package functions.
@@ -66,5 +66,5 @@ pnadc.svy3 <- get_pnadc(year=2017, topic=4, vars=c("S07006","S07007"), defyear=2
 if (!is.null(pnadc.svy3)) survey::svymean(x=~S07007, design=pnadc.svy3, na.rm=TRUE)}
 }
 \seealso{
-\link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labelling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC example files.
+\link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labeling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC toy example files.
 }
