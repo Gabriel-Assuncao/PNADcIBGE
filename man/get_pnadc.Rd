@@ -9,6 +9,7 @@ get_pnadc(
   quarter = NULL,
   interview = NULL,
   topic = NULL,
+  selected = FALSE,
   vars = NULL,
   defyear = NULL,
   defperiod = NULL,
@@ -26,6 +27,8 @@ get_pnadc(
 \item{interview}{The interview number of the data to be downloaded. Must be number from 1 to 5. Vector not accepted. Using this option will get annual per interview data. If \code{NULL}, \code{quarter} or \code{topic} number must be provided.}
 
 \item{topic}{The quarter related to the topic of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. Using this option will get annual per topic data. If \code{NULL}, \code{quarter} or \code{interview} number must be provided.}
+
+\item{selected}{Logical value. If \code{TRUE}, the specific questionnaire for selected resident will be used. If \code{FALSE}, the basic questionnaire for household and residents will be used. For more information about these supplemental topics, please check the survey official website.}
 
 \item{vars}{Vector of variable names to be kept for analysis. Default is to keep all variables.}
 

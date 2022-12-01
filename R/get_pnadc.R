@@ -5,6 +5,7 @@
 #' @param quarter The quarter of the year of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, \code{interview} or \code{topic} number must be provided.
 #' @param interview The interview number of the data to be downloaded. Must be number from 1 to 5. Vector not accepted. Using this option will get annual per interview data. If \code{NULL}, \code{quarter} or \code{topic} number must be provided.
 #' @param topic The quarter related to the topic of the data to be downloaded. Must be number from 1 to 4. Vector not accepted. Using this option will get annual per topic data. If \code{NULL}, \code{quarter} or \code{interview} number must be provided.
+#' @param selected Logical value. If \code{TRUE}, the specific questionnaire for selected resident will be used. If \code{FALSE}, the basic questionnaire for household and residents will be used. For more information about these supplemental topics, please check the survey official website.
 #' @param vars Vector of variable names to be kept for analysis. Default is to keep all variables.
 #' @param defyear The year of the deflator data to be downloaded for annual microdata. Must be a number between 2017 and the last available year. Vector not accepted. If \code{NULL}, the deflator year will be defined as the last year available for interview microdata, or as equal to \code{year} for topic microdata. When \code{quarter} is defined, this argument will be ignored. This argument will be used only if \code{deflator} was set as \code{TRUE}.
 #' @param defperiod The quarter period of the deflator data to be downloaded for annual per topic microdata. Must be number from 1 to 4. Vector not accepted. If \code{NULL}, the deflator period will be defined as equal to \code{topic}. When \code{quarter} or \code{interview} is defined, this argument will be ignored. This argument will be used only if \code{deflator} was set as \code{TRUE}.
@@ -31,7 +32,7 @@
 #' if (!is.null(pnadc.svy3)) survey::svymean(x=~S07007, design=pnadc.svy3, na.rm=TRUE)}
 #' @export
 
-get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars = NULL, defyear = NULL, defperiod = NULL, 
+get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, selected = FALSE, vars = NULL, defyear = NULL, defperiod = NULL, 
                        labels = TRUE, deflator = TRUE, design = TRUE, savedir = tempdir())
 {
   if (is.null(quarter) & is.null(interview) & is.null(topic)) {
@@ -106,6 +107,10 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
     inputfile <- paste0(savedir, "/", inputname)
     inputfile <- rownames(file.info(inputfile)[order(file.info(inputfile)$ctime),])[length(inputfile)]
     data_pnadc <- PNADcIBGE::read_pnadc(microdata=microdatafile, input_txt=inputfile, vars=vars)
+    data_pnadc <- data_pnadc[,!(names(data_pnadc) %in% c("V1030", "V1031", "V1032", "V1034", sprintf("V1032%03d", seq(1:200)), "V1035", "V1036", "V1037", "V1038", sprintf("V1036%03d", seq(1:200)), "V1039", "V1040", "V1041", "V1042", sprintf("V1040%03d", seq(1:200))))]
+    if (selected == TRUE) {
+      message("The definition of TRUE for the selected argument will be ignored, since this type of microdata does not exist for the period indicated.")
+    }
     if (labels == TRUE) {
       if (exists("pnadc_labeller", where="package:PNADcIBGE", mode="function")) {
         dicname <- dir(savedir, pattern=paste0("^dicionario_PNADC_microdados_trimestral.*\\.xls$"), ignore.case=FALSE)
@@ -182,6 +187,10 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
     inputfile <- paste0(savedir, "/", inputname)
     inputfile <- rownames(file.info(inputfile)[order(file.info(inputfile)$ctime),])[length(inputfile)]
     data_pnadc <- PNADcIBGE::read_pnadc(microdata=microdatafile, input_txt=inputfile, vars=vars)
+    data_pnadc <- data_pnadc[,!(names(data_pnadc) %in% c("V1027", "V1028", "V1029", "V1033", sprintf("V1028%03d", seq(1:200)), "V1035", "V1036", "V1037", "V1038", sprintf("V1036%03d", seq(1:200)), "V1039", "V1040", "V1041", "V1042", sprintf("V1040%03d", seq(1:200))))]
+    if (selected == TRUE) {
+      message("The definition of TRUE for the selected argument will be ignored, since this type of microdata does not exist for the period indicated.")
+    }
     if (labels == TRUE) {
       if (exists("pnadc_labeller", where="package:PNADcIBGE", mode="function")) {
         dicfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Visita_", interview, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".xls"))
@@ -277,6 +286,21 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, vars
     inputfile <- paste0(savedir, "/", inputname)
     inputfile <- rownames(file.info(inputfile)[order(file.info(inputfile)$ctime),])[length(inputfile)]
     data_pnadc <- PNADcIBGE::read_pnadc(microdata=microdatafile, input_txt=inputfile, vars=vars)
+    if (selected == TRUE & ((year == 2021 & topic == 4) | (year == 2022 & topic == 2))) {
+      if (year == 2021 & topic == 4) {
+        data_pnadc <- data_pnadc[(data_pnadc$S090000 == "1" & !is.na(data_pnadc$S090000)),]
+      }
+      else {
+        data_pnadc <- data_pnadc[(data_pnadc$S12001A == "1" & !is.na(data_pnadc$S12001A)),]
+      }
+      data_pnadc <- data_pnadc[,!(names(data_pnadc) %in% c("V1027", "V1028", "V1029", "V1033", sprintf("V1028%03d", seq(1:200)), "V1030", "V1031", "V1032", "V1034", sprintf("V1032%03d", seq(1:200)), "V1039", "V1040", "V1041", "V1042", sprintf("V1040%03d", seq(1:200))))]
+    }
+    else {
+      data_pnadc <- data_pnadc[,!(names(data_pnadc) %in% c("V1030", "V1031", "V1032", "V1034", sprintf("V1032%03d", seq(1:200)), "V1035", "V1036", "V1037", "V1038", sprintf("V1036%03d", seq(1:200)), "V1039", "V1040", "V1041", "V1042", sprintf("V1040%03d", seq(1:200))))]
+      if (selected == TRUE) {
+        message("The definition of TRUE for the selected argument will be ignored, since this type of microdata does not exist for the period indicated.")
+      }
+    }
     if (labels == TRUE) {
       if (exists("pnadc_labeller", where="package:PNADcIBGE", mode="function")) {
         dicfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", topic, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".xls"))

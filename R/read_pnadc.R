@@ -22,7 +22,7 @@ read_pnadc <- function(microdata, input_txt, vars = NULL) {
       missvar <- vars[!(vars %in% input$X2)]
       message(paste("Variables", paste(missvar, collapse=", "), "not present in microdata.\n"))
     }
-    input %<>% subset(X2 %in% c("Ano", "Trimestre", "UF", "UPA", "ID_DOMICILIO", "Estrato", "V1008", "V1014", "V1027", "V1028", sprintf("V1028%03d", seq(1:200)), "V1029", "V1030", "V1031", "V1032", sprintf("V1032%03d", seq(1:200)), "V1033", "V1034", "posest", "posest_sxi", "V2003", vars))
+    input %<>% subset(X2 %in% c("Ano", "Trimestre", "UF", "UPA", "ID_DOMICILIO", "Estrato", "V1008", "V1014", "V1027", "V1028", sprintf("V1028%03d", seq(1:200)), "V1029", "V1030", "V1031", "V1032", sprintf("V1032%03d", seq(1:200)), "V1033", "V1034", "V1035", "V1036", sprintf("V1036%03d", seq(1:200)), "V1037", "V1038", "V1039", "V1040", sprintf("V1040%03d", seq(1:200)), "V1041", "V1042", "posest", "posest_sxi", "V2003", "S090000", "S12001A", vars))
   }
   columns <- input %$% readr::fwf_positions(start, end, X2)
   data_pnadc <- suppressWarnings(readr::read_fwf(microdata, columns, col_types=paste0(input$type, collapse="")))

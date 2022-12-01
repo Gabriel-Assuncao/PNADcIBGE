@@ -32,7 +32,11 @@ pnadc_design <- function(data_pnadc) {
     if (!(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1027", "V1028", "V1029", "V1033", "posest", "posest_sxi") %in% names(data_pnadc))) |
         !(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1030", "V1031", "V1032", "V1034", "posest", "posest_sxi") %in% names(data_pnadc))) |
         !(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1027", "V1028", "V1029", "posest") %in% names(data_pnadc))) | 
-        !(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1030", "V1031", "V1032", "posest") %in% names(data_pnadc)))) {
+        !(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1030", "V1031", "V1032", "posest") %in% names(data_pnadc))) |
+        !(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1035", "V1036", "V1037", "V1038", "posest", "posest_sxi") %in% names(data_pnadc))) |
+        !(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1039", "V1040", "V1041", "V1042", "posest", "posest_sxi") %in% names(data_pnadc))) |
+        !(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1035", "V1036", "V1037", "posest") %in% names(data_pnadc))) | 
+        !(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1039", "V1040", "V1041", "posest") %in% names(data_pnadc)))) {
       options(survey.lonely.psu="adjust")
       options(survey.adjust.domain.lonely=TRUE)
       if (!(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1027", "V1028", "V1029", "V1033", "posest", "posest_sxi") %in% names(data_pnadc)))) {
@@ -69,9 +73,49 @@ pnadc_design <- function(data_pnadc) {
         popc.types <- popc.types[order(popc.types$posest),]
         data_posterior <- survey::postStratify(design=data_prior, strata=~posest, population=popc.types)
       }
-      else {
+      else if (!(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1030", "V1031", "V1032", "posest") %in% names(data_pnadc)))) {
         data_prior <- survey::svydesign(ids=~UPA, strata=~Estrato, data=data_pnadc, weights=~V1031, nest=TRUE)
         popc.types <- data.frame(posest=as.character(unique(data_pnadc$posest)), Freq=as.numeric(unique(data_pnadc$V1030)))
+        popc.types <- popc.types[order(popc.types$posest),]
+        data_posterior <- survey::postStratify(design=data_prior, strata=~posest, population=popc.types)
+      }
+      else if (!(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1035", "V1036", "V1037", "V1038", "posest", "posest_sxi") %in% names(data_pnadc)))) {
+        if (!(FALSE %in% (sprintf("V1036%03d", seq(1:200)) %in% names(data_pnadc)))) {
+          data_posterior <- survey::svrepdesign(data=data_pnadc, weight=~V1036, type="bootstrap", repweights="V1036[0-9]+", mse=TRUE, replicates=length(sprintf("V1036%03d", seq(1:200))), df=length(sprintf("V1036%03d", seq(1:200))))
+        }
+        else {
+          data_prior <- survey::svydesign(ids=~UPA+ID_DOMICILIO, strata=~Estrato, data=data_pnadc, weights=~V1035, nest=TRUE)
+          popc.types <- data.frame(posest=as.character(unique(data_pnadc$posest)), Freq=as.numeric(unique(data_pnadc$V1037)))
+          popc.types <- popc.types[order(popc.types$posest),]
+          popi.types <- data.frame(posest_sxi=as.character(unique(data_pnadc$posest_sxi)), Freq=as.numeric(unique(data_pnadc$V1038)))
+          popi.types <- popi.types[order(popi.types$posest_sxi),]
+          pop.rake.calib <- c(sum(popc.types$Freq), popc.types$Freq[-1], popi.types$Freq[-1])
+          data_posterior <- survey::calibrate(design=data_prior, formula=~posest+posest_sxi, pop=pop.rake.calib, calfun="raking", aggregate.stage=2, bounds=c(0.2,5), multicore=TRUE)
+        }
+      }
+      else if (!(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1039", "V1040", "V1041", "V1042", "posest", "posest_sxi") %in% names(data_pnadc)))) {
+        if (!(FALSE %in% (sprintf("V1040%03d", seq(1:200)) %in% names(data_pnadc)))) {
+          data_posterior <- survey::svrepdesign(data=data_pnadc, weight=~V1040, type="bootstrap", repweights="V1040[0-9]+", mse=TRUE, replicates=length(sprintf("V1040%03d", seq(1:200))), df=length(sprintf("V1040%03d", seq(1:200))))
+        }
+        else {
+          data_prior <- survey::svydesign(ids=~UPA+ID_DOMICILIO, strata=~Estrato, data=data_pnadc, weights=~V1039, nest=TRUE)
+          popc.types <- data.frame(posest=as.character(unique(data_pnadc$posest)), Freq=as.numeric(unique(data_pnadc$V1041)))
+          popc.types <- popc.types[order(popc.types$posest),]
+          popi.types <- data.frame(posest_sxi=as.character(unique(data_pnadc$posest_sxi)), Freq=as.numeric(unique(data_pnadc$V1042)))
+          popi.types <- popi.types[order(popi.types$posest_sxi),]
+          pop.rake.calib <- c(sum(popc.types$Freq), popc.types$Freq[-1], popi.types$Freq[-1])
+          data_posterior <- survey::calibrate(design=data_prior, formula=~posest+posest_sxi, pop=pop.rake.calib, calfun="raking", aggregate.stage=2, bounds=c(0.2,5), multicore=TRUE)
+        }
+      }
+      else if (!(FALSE %in% (c("UPA", "ID_DOMICILIO", "Estrato", "V1035", "V1036", "V1037", "posest") %in% names(data_pnadc)))) {
+        data_prior <- survey::svydesign(ids=~UPA, strata=~Estrato, data=data_pnadc, weights=~V1035, nest=TRUE)
+        popc.types <- data.frame(posest=as.character(unique(data_pnadc$posest)), Freq=as.numeric(unique(data_pnadc$V1037)))
+        popc.types <- popc.types[order(popc.types$posest),]
+        data_posterior <- survey::postStratify(design=data_prior, strata=~posest, population=popc.types)
+      }
+      else {
+        data_prior <- survey::svydesign(ids=~UPA, strata=~Estrato, data=data_pnadc, weights=~V1039, nest=TRUE)
+        popc.types <- data.frame(posest=as.character(unique(data_pnadc$posest)), Freq=as.numeric(unique(data_pnadc$V1041)))
         popc.types <- popc.types[order(popc.types$posest),]
         data_posterior <- survey::postStratify(design=data_prior, strata=~posest, population=popc.types)
       }
