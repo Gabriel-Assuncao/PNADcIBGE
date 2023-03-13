@@ -26,6 +26,6 @@ read_pnadc <- function(microdata, input_txt, vars = NULL) {
   }
   columns <- input %$% readr::fwf_positions(start, end, X2)
   data_pnadc <- suppressWarnings(readr::read_fwf(microdata, columns, col_types=paste0(input$type, collapse="")))
-  data_pnadc <- dplyr::mutate(data_pnadc, ID_DOMICILIO=paste0(data_pnadc$UPA, data_pnadc$V1008, data_pnadc$V1014))
+  data_pnadc <- dplyr::mutate(data_pnadc, ID_DOMICILIO=paste0(UPA, V1008, V1014))
   return(data_pnadc)
 }
