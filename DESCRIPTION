@@ -1,7 +1,7 @@
 Package: PNADcIBGE
 Type: Package
 Title: Downloading, Reading and Analyzing PNADC Microdata
-Version: 0.7.2
+Version: 0.7.3
 Authors@R: c(person("Douglas", "Braga", email = "pacotesipd@ibge.gov.br",
                   role = c("aut")),
              person("Gabriel", "Assuncao", email = "pacotesipd@ibge.gov.br",
@@ -15,7 +15,7 @@ Description: Provides tools for downloading, reading and analyzing the PNADC,
 Depends: R (>= 3.2.0)
 Imports: dplyr, httr, magrittr, projmgr, RCurl, readr, readxl, survey,
         tibble, timeDate, utils
-Suggests: convey, lavaan.survey, srvyr, tidyverse
+Suggests: convey, SIPDIBGE, srvyr
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.1.2
@@ -25,6 +25,6 @@ Author: Douglas Braga [aut],
   Luna Hidalgo [ctb]
 Maintainer: Gabriel Assuncao <pacotesipd@ibge.gov.br>
 BugReports: https://github.com/Gabriel-Assuncao/PNADcIBGE/issues
-Packaged: 2023-01-18 22:37:43 UTC; gabriel.assuncao
+Packaged: 2023-06-27 19:15:27 UTC; gabriel.assuncao
 Repository: CRAN
-Date/Publication: 2023-01-19 17:50:05 UTC
+Date/Publication: 2023-06-30 19:30:07 UTC

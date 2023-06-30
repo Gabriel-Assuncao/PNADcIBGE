@@ -1,7 +1,7 @@
-f19f6badbd94874353b62975d428d04c *DESCRIPTION
+bf00f419934a26cc3131895636fd4848 *DESCRIPTION
 6decbd208cf796c300bb7ead158073c5 *NAMESPACE
 56c615e7888dc2fdba340fbe244d9a17 *R/example.R
-d9f1501ad6135a6189488617d39a916e *R/get_pnadc.R
+f14610302a18d3dfd1435ca95a6df52f *R/get_pnadc.R
 9e27934733582ef0b8f9009a1b1377b1 *R/pnadc_deflator.R
 23ebe830f0fc41ebbb4d0210e657ded0 *R/pnadc_design.R
 10eb818928b02d66929064f772715f5a *R/pnadc_labeller.R
@@ -11,7 +11,7 @@ f91f4b0b1e83479db2c3d39f507c35e7 *R/read_pnadc.R
 d10e8245d66fa52552a44fd4f013c266 *inst/extdata/dictionaryexample.xls
 52efec701f05546c2964b8c9c77d8cfc *inst/extdata/exampledata.txt
 9968b588734160713e5fe4534f60442f *inst/extdata/input_example.txt
-098f07a6ac64a3f926ea6bbe9285bc5e *man/get_pnadc.Rd
+ac1ec04a97d2b9cae97ac399d71a2e1e *man/get_pnadc.Rd
 6c59ba1d3227532a1b4260c1b5f6dea4 *man/pnadc_deflator.Rd
 14b708461243984479952184dd06a422 *man/pnadc_design.Rd
 60d07166758d44c515a1adb13676cd08 *man/pnadc_example.Rd

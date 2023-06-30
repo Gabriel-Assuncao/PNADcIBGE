@@ -69,12 +69,7 @@ pnadc.svy3 <- get_pnadc(year=2017, topic=4, selected=FALSE, vars=c("S07006","S07
                         defyear=2017, defperiod=4, labels=TRUE, deflator=TRUE, design=TRUE,
                         savedir=tempdir())
 # Calculating proportion of cell phone for personal use with internet access
-if (!is.null(pnadc.svy3)) survey::svymean(x=~S07007, design=pnadc.svy3, na.rm=TRUE)
-pnadc.svy4 <- get_pnadc(year=2021, topic=4, selected=TRUE, vars=c("S090011","S0900111"),
-                        defyear=2021, defperiod=4, labels=TRUE, deflator=TRUE, design=TRUE,
-                        savedir=tempdir())
-# Calculating proportion of people living in households with public lighting
-if (!is.null(pnadc.svy4)) survey::svymean(x=~S090011, design=pnadc.svy4, na.rm=TRUE)}
+if (!is.null(pnadc.svy3)) survey::svymean(x=~S07007, design=pnadc.svy3, na.rm=TRUE)}
 }
 \seealso{
 \link[PNADcIBGE]{read_pnadc} for reading PNADC microdata.\cr \link[PNADcIBGE]{pnadc_labeller} for labeling categorical variables from PNADC microdata.\cr \link[PNADcIBGE]{pnadc_deflator} for adding deflator variables to PNADC microdata.\cr \link[PNADcIBGE]{pnadc_design} for creating PNADC survey design object.\cr \link[PNADcIBGE]{pnadc_example} for getting the path of the quarter PNADC toy example files.

@@ -32,12 +32,7 @@
 #'                         defyear=2017, defperiod=4, labels=TRUE, deflator=TRUE, design=TRUE,
 #'                         savedir=tempdir())
 #' # Calculating proportion of cell phone for personal use with internet access
-#' if (!is.null(pnadc.svy3)) survey::svymean(x=~S07007, design=pnadc.svy3, na.rm=TRUE)
-#' pnadc.svy4 <- get_pnadc(year=2021, topic=4, selected=TRUE, vars=c("S090011","S0900111"),
-#'                         defyear=2021, defperiod=4, labels=TRUE, deflator=TRUE, design=TRUE,
-#'                         savedir=tempdir())
-#' # Calculating proportion of people living in households with public lighting
-#' if (!is.null(pnadc.svy4)) survey::svymean(x=~S090011, design=pnadc.svy4, na.rm=TRUE)}
+#' if (!is.null(pnadc.svy3)) survey::svymean(x=~S07007, design=pnadc.svy3, na.rm=TRUE)}
 #' @export
 
 get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, selected = FALSE, vars = NULL, defyear = NULL, defperiod = NULL, 
