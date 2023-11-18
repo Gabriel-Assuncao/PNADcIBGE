@@ -19,7 +19,7 @@
 #' # Downloading data
 #' pnadc.df2 <- get_pnadc(year=2017, quarter=4, selected=FALSE, vars=c("VD4001","VD4002"),
 #'                        defyear=2017, defperiod=4, labels=TRUE, deflator=FALSE, design=FALSE,
-#'                        savedir=tempdir())
+#'                        reload=TRUE, savedir=tempdir())
 #' deflator.path2 <- pnadc_example(path="deflatorexample.xls")
 #' pnadc.df2 <- pnadc_deflator(data_pnadc=pnadc.df2, deflator.file=deflator.path2)}
 #' @export

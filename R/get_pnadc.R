@@ -12,6 +12,7 @@
 #' @param labels Logical value. If \code{TRUE}, categorical variables will presented as factors with labels corresponding to the survey's dictionary.
 #' @param deflator Logical value. If \code{TRUE}, deflator variables will be available for use in the microdata.
 #' @param design Logical value. If \code{TRUE}, will return an object of class \code{survey.design} or \code{svyrep.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.
+#' @param reload Logical value. If \code{TRUE}, will re-download the files even if they already exist in the save directory. If \code{FALSE}, will be checked if the files already exist in the save directory and the download will not be performed repeatedly.
 #' @param savedir Directory to save the downloaded data. Default is to use a temporary directory.
 #' @return An object of class \code{survey.design} or \code{svyrep.design} with the data from PNADC and its sample design, or a tibble with selected variables of the microdata, including the necessary survey design ones.
 #' @note For more information, visit the survey official website <\url{https://www.ibge.gov.br/estatisticas/sociais/trabalho/9171-pesquisa-nacional-por-amostra-de-domicilios-continua-mensal.html?=&t=o-que-e}> and consult the other functions of this package, described below.
@@ -20,23 +21,23 @@
 #' \donttest{
 #' pnadc.svy <- get_pnadc(year=2017, quarter=4, selected=FALSE, vars=c("VD4001","VD4002"),
 #'                        defyear=2017, defperiod=4, labels=TRUE, deflator=TRUE, design=TRUE,
-#'                        savedir=tempdir())
+#'                        reload=TRUE, savedir=tempdir())
 #' # Calculating proportion of employed and unemployed people
 #' if (!is.null(pnadc.svy)) survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)
 #' pnadc.svy2 <- get_pnadc(year=2017, interview=5, selected=FALSE, vars=c("V4112","V4121B"),
 #'                         defyear=2017, defperiod=4, labels=TRUE, deflator=TRUE, design=TRUE,
-#'                         savedir=tempdir())
+#'                         reload=TRUE, savedir=tempdir())
 #' # Calculating average hours dedicated to the care of people or household chores
 #' if (!is.null(pnadc.svy2)) survey::svymean(x=~V4121B, design=pnadc.svy2, na.rm=TRUE)
 #' pnadc.svy3 <- get_pnadc(year=2017, topic=4, selected=FALSE, vars=c("S07006","S07007"),
 #'                         defyear=2017, defperiod=4, labels=TRUE, deflator=TRUE, design=TRUE,
-#'                         savedir=tempdir())
+#'                         reload=TRUE, savedir=tempdir())
 #' # Calculating proportion of cell phone for personal use with internet access
 #' if (!is.null(pnadc.svy3)) survey::svymean(x=~S07007, design=pnadc.svy3, na.rm=TRUE)}
 #' @export
 
 get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, selected = FALSE, vars = NULL, defyear = NULL, defperiod = NULL, 
-                       labels = TRUE, deflator = TRUE, design = TRUE, savedir = tempdir())
+                       labels = TRUE, deflator = TRUE, design = TRUE, reload = TRUE, savedir = tempdir())
 {
   if (is.null(quarter) & is.null(interview) & is.null(topic)) {
     message("Quarter number or interview number or topic number must be provided.")
@@ -60,6 +61,12 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
   if (!dir.exists(savedir)) {
     savedir <- tempdir()
     message(paste0("The directory provided does not exist, so the directory was set to '", savedir), "'.")
+  }
+  if (savedir != tempdir()) {
+    printpath <- TRUE
+  }
+  else {
+    printpath <- FALSE
   }
   if (substr(savedir, nchar(savedir), nchar(savedir)) == "/" | substr(savedir, nchar(savedir), nchar(savedir)) == "\\") {
     savedir <- substr(savedir, 1, nchar(savedir)-1)
@@ -93,16 +100,32 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
     else {
       dataname <- paste0(dataname, ".zip")
     }
-    utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
-    if (suppressWarnings(class(try(utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir), silent=TRUE)) == "try-error")) {
-      message("The directory defined to save the downloaded data is denied permission to overwrite the existing files, please clear or change this directory.")
-      return(NULL)
+    if (reload == FALSE & file.exists(paste0(savedir, "/", dataname))) {
+      message("The reload argument was defined as FALSE and the file of microdata was already downloaded, so the download process will not execute again.")
     }
-    utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+    else {
+      utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
+      if (suppressWarnings(class(try(utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir), silent=TRUE)) == "try-error")) {
+        message("The directory defined to save the downloaded data is denied permission to overwrite the existing files, please clear or change this directory.")
+        return(NULL)
+      }
+      utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+      if (reload == FALSE) {
+        message("The definition of FALSE for the reload argument will be ignored, since the file of microdata was not downloaded yet.")
+      }
+    }
     docfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".zip"))
     inputzip <- paste0(docfiles[which(startsWith(docfiles, "Dicionario_e_input"))], ".zip")
-    utils::download.file(url=paste0(ftpdir, "Documentacao/", inputzip), destfile=paste0(savedir, "/Dicionario_e_input.zip"), mode="wb")
-    utils::unzip(zipfile=paste0(savedir, "/Dicionario_e_input.zip"), exdir=savedir)
+    if (reload == FALSE & file.exists(paste0(savedir, "/Dicionario_e_input.zip"))) {
+      message("The reload argument was defined as FALSE and the file of dictionary and input was already downloaded, so the download process will not execute again.")
+    }
+    else {
+      utils::download.file(url=paste0(ftpdir, "Documentacao/", inputzip), destfile=paste0(savedir, "/Dicionario_e_input.zip"), mode="wb")
+      utils::unzip(zipfile=paste0(savedir, "/Dicionario_e_input.zip"), exdir=savedir)
+      if (reload == FALSE) {
+        message("The definition of FALSE for the reload argument will be ignored, since the file of dictionary and input was not downloaded yet.")
+      }
+    }
     microdataname <- dir(savedir, pattern=paste0("^PNADC_0", quarter, year, ".*\\.txt$"), ignore.case=FALSE)
     microdatafile <- paste0(savedir, "/", microdataname)
     microdatafile <- rownames(file.info(microdatafile)[order(file.info(microdatafile)$mtime),])[length(microdatafile)]
@@ -131,8 +154,16 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
           message("Deflator year or period values were provided, but will be ignored for this type of microdata.")
         }
         defzip <- paste0(docfiles[which(startsWith(docfiles, "Deflatores"))], ".zip")
-        utils::download.file(url=paste0(ftpdir, "Documentacao/", defzip), destfile=paste0(savedir, "/Deflatores.zip"), mode="wb")
-        utils::unzip(zipfile=paste0(savedir, "/Deflatores.zip"), exdir=savedir)
+        if (reload == FALSE & file.exists(paste0(savedir, "/Deflatores.zip"))) {
+          message("The reload argument was defined as FALSE and the file of deflator was already downloaded, so the download process will not execute again.")
+        }
+        else {
+          utils::download.file(url=paste0(ftpdir, "Documentacao/", defzip), destfile=paste0(savedir, "/Deflatores.zip"), mode="wb")
+          utils::unzip(zipfile=paste0(savedir, "/Deflatores.zip"), exdir=savedir)
+          if (reload == FALSE) {
+            message("The definition of FALSE for the reload argument will be ignored, since the file of deflator was not downloaded yet.")
+          }
+        }
         defname <- dir(savedir, pattern=paste0("^deflator_PNADC_.*\\_trimestral_.*\\.xls$"), ignore.case=FALSE)
         deffile <- paste0(savedir, "/", defname)
         deffile <- rownames(file.info(deffile)[order(file.info(deffile)$mtime),])[length(deffile)]
@@ -172,12 +203,20 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
     else {
       dataname <- paste0(dataname, ".zip")
     }
-    utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
-    if (suppressWarnings(class(try(utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir), silent=TRUE)) == "try-error")) {
-      message("The directory defined to save the downloaded data is denied permission to overwrite the existing files, please clear or change this directory.")
-      return(NULL)
+    if (reload == FALSE & file.exists(paste0(savedir, "/", dataname))) {
+      message("The reload argument was defined as FALSE and the file of microdata was already downloaded, so the download process will not execute again.")
     }
-    utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+    else {
+      utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
+      if (suppressWarnings(class(try(utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir), silent=TRUE)) == "try-error")) {
+        message("The directory defined to save the downloaded data is denied permission to overwrite the existing files, please clear or change this directory.")
+        return(NULL)
+      }
+      utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+      if (reload == FALSE) {
+        message("The definition of FALSE for the reload argument will be ignored, since the file of microdata was not downloaded yet.")
+      }
+    }
     docfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Visita_", interview, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".txt"))
     if (year < 2015) {
       inputpre <- paste0(docfiles[which(startsWith(docfiles, paste0("input_PNADC_2012_a_2014_visita", interview)))], ".txt")
@@ -185,7 +224,15 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
     else {
       inputpre <- paste0(docfiles[which(startsWith(docfiles, paste0("input_PNADC_", year, "_visita", interview)))], ".txt")
     }
-    utils::download.file(url=paste0(ftpdir, "Visita_", interview, "/Documentacao/", inputpre), destfile=paste0(savedir, "/", inputpre), mode="wb")
+    if (reload == FALSE & file.exists(paste0(savedir, "/", inputpre))) {
+      message("The reload argument was defined as FALSE and the file of input was already downloaded, so the download process will not execute again.")
+    }
+    else {
+      utils::download.file(url=paste0(ftpdir, "Visita_", interview, "/Documentacao/", inputpre), destfile=paste0(savedir, "/", inputpre), mode="wb")
+      if (reload == FALSE) {
+        message("The definition of FALSE for the reload argument will be ignored, since the file of input was not downloaded yet.")
+      }
+    }
     microdataname <- dir(savedir, pattern=paste0("^PNADC_", year, "_visita", interview, ".*\\.txt$"), ignore.case=FALSE)
     microdatafile <- paste0(savedir, "/", microdataname)
     microdatafile <- rownames(file.info(microdatafile)[order(file.info(microdatafile)$mtime),])[length(microdatafile)]
@@ -211,7 +258,15 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
         else {
           dicpre <- paste0(dicfiles[which(startsWith(dicfiles, paste0("dicionario_PNADC_microdados_", year, "_visita", interview)))], ".xls")
         }
-        utils::download.file(url=paste0(ftpdir, "Visita_", interview, "/Documentacao/", dicpre), destfile=paste0(savedir, "/", dicpre), mode="wb")
+        if (reload == FALSE & file.exists(paste0(savedir, "/", dicpre))) {
+          message("The reload argument was defined as FALSE and the file of dictionary was already downloaded, so the download process will not execute again.")
+        }
+        else {
+          utils::download.file(url=paste0(ftpdir, "Visita_", interview, "/Documentacao/", dicpre), destfile=paste0(savedir, "/", dicpre), mode="wb")
+          if (reload == FALSE) {
+            message("The definition of FALSE for the reload argument will be ignored, since the file of dictionary was not downloaded yet.")
+          }
+        }
         if (year < 2015) {
           dicname <- dir(savedir, pattern=paste0("^dicionario_PNADC_microdados_2012_a_2014_visita", interview, ".*\\.xls$"), ignore.case=FALSE)
         }
@@ -249,7 +304,15 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
           message(paste0("Deflator data unavailable for selected year, so deflator year was changed to ", defyear, "."))
         }
         defpre <- paste0(arcfiles[which(startsWith(arcfiles, paste0("deflator_PNADC_", defyear)))], ".xls")
-        utils::download.file(url=paste0(ftpdir, "Documentacao_Geral/", defpre), destfile=paste0(savedir, "/", defpre), mode="wb")
+        if (reload == FALSE & file.exists(paste0(savedir, "/", defpre))) {
+          message("The reload argument was defined as FALSE and the file of deflator was already downloaded, so the download process will not execute again.")
+        }
+        else {
+          utils::download.file(url=paste0(ftpdir, "Documentacao_Geral/", defpre), destfile=paste0(savedir, "/", defpre), mode="wb")
+          if (reload == FALSE) {
+            message("The definition of FALSE for the reload argument will be ignored, since the file of deflator was not downloaded yet.")
+          }
+        }
         defname <- dir(savedir, pattern=paste0("^deflator_PNADC_", defyear, ".*\\.xls$"), ignore.case=FALSE)
         deffile <- paste0(savedir, "/", defname)
         deffile <- rownames(file.info(deffile)[order(file.info(deffile)$mtime),])[length(deffile)]
@@ -289,15 +352,31 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
     else {
       dataname <- paste0(dataname, ".zip")
     }
-    utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
-    if (suppressWarnings(class(try(utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir), silent=TRUE)) == "try-error")) {
-      message("The directory defined to save the downloaded data is denied permission to overwrite the existing files, please clear or change this directory.")
-      return(NULL)
+    if (reload == FALSE & file.exists(paste0(savedir, "/", dataname))) {
+      message("The reload argument was defined as FALSE and the file of microdata was already downloaded, so the download process will not execute again.")
     }
-    utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+    else {
+      utils::download.file(url=paste0(ftpdata, dataname), destfile=paste0(savedir, "/", dataname), mode="wb")
+      if (suppressWarnings(class(try(utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir), silent=TRUE)) == "try-error")) {
+        message("The directory defined to save the downloaded data is denied permission to overwrite the existing files, please clear or change this directory.")
+        return(NULL)
+      }
+      utils::unzip(zipfile=paste0(savedir, "/", dataname), exdir=savedir)
+      if (reload == FALSE) {
+        message("The definition of FALSE for the reload argument will be ignored, since the file of microdata was not downloaded yet.")
+      }
+    }
     docfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", topic, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".txt"))
     inputpre <- paste0(docfiles[which(startsWith(docfiles, paste0("input_PNADC_trimestre", topic)))], ".txt")
-    utils::download.file(url=paste0(ftpdir, "Trimestre_", topic, "/Documentacao/", inputpre), destfile=paste0(savedir, "/", inputpre), mode="wb")
+    if (reload == FALSE & file.exists(paste0(savedir, "/", inputpre))) {
+      message("The reload argument was defined as FALSE and the file of input was already downloaded, so the download process will not execute again.")
+    }
+    else {
+      utils::download.file(url=paste0(ftpdir, "Trimestre_", topic, "/Documentacao/", inputpre), destfile=paste0(savedir, "/", inputpre), mode="wb")
+      if (reload == FALSE) {
+        message("The definition of FALSE for the reload argument will be ignored, since the file of input was not downloaded yet.")
+      }
+    }
     microdataname <- dir(savedir, pattern=paste0("^PNADC_", year, "_trimestre", topic, ".*\\.txt$"), ignore.case=FALSE)
     microdatafile <- paste0(savedir, "/", microdataname)
     microdatafile <- rownames(file.info(microdatafile)[order(file.info(microdatafile)$mtime),])[length(microdatafile)]
@@ -328,7 +407,15 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
       if (exists("pnadc_labeller", where="package:PNADcIBGE", mode="function")) {
         dicfiles <- unlist(strsplit(unlist(strsplit(unlist(strsplit(gsub("\r\n", "\n", RCurl::getURL(paste0(ftpdir, "Trimestre_", topic, "/Documentacao/"), dirlistonly=TRUE)), "\n")), "<a href=[[:punct:]]")), ".xls"))
         dicpre <- paste0(dicfiles[which(startsWith(dicfiles, paste0("dicionario_PNADC_microdados_trimestre", topic)))], ".xls")
-        utils::download.file(url=paste0(ftpdir, "Trimestre_", topic, "/Documentacao/", dicpre), destfile=paste0(savedir, "/", dicpre), mode="wb")
+        if (reload == FALSE & file.exists(paste0(savedir, "/", dicpre))) {
+          message("The reload argument was defined as FALSE and the file of dictionary was already downloaded, so the download process will not execute again.")
+        }
+        else {
+          utils::download.file(url=paste0(ftpdir, "Trimestre_", topic, "/Documentacao/", dicpre), destfile=paste0(savedir, "/", dicpre), mode="wb")
+          if (reload == FALSE) {
+            message("The definition of FALSE for the reload argument will be ignored, since the file of dictionary was not downloaded yet.")
+          }
+        }
         dicname <- dir(savedir, pattern=paste0("^dicionario_PNADC_microdados_trimestre", topic, ".*\\.xls$"), ignore.case=FALSE)
         dicfile <- paste0(savedir, "/", dicname)
         dicfile <- rownames(file.info(dicfile)[order(file.info(dicfile)$mtime),])[length(dicfile)]
@@ -374,7 +461,15 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
           message(paste0("Deflator data unavailable for selected year and period, so deflator year was changed to ", defyear, " and period was changed to ", defperiod, "."))
         }
         defpre <- paste0(perfiles[which(startsWith(perfiles, paste0("deflator_PNADC_", defyear, "_trimestre", defperiod)))], ".xls")
-        utils::download.file(url=paste0(ftpdir, "Trimestre_", defperiod, "/Documentacao/", defpre), destfile=paste0(savedir, "/", defpre), mode="wb")
+        if (reload == FALSE & file.exists(paste0(savedir, "/", defpre))) {
+          message("The reload argument was defined as FALSE and the file of deflator was already downloaded, so the download process will not execute again.")
+        }
+        else {
+          utils::download.file(url=paste0(ftpdir, "Trimestre_", defperiod, "/Documentacao/", defpre), destfile=paste0(savedir, "/", defpre), mode="wb")
+          if (reload == FALSE) {
+            message("The definition of FALSE for the reload argument will be ignored, since the file of deflator was not downloaded yet.")
+          }
+        }
         defname <- dir(savedir, pattern=paste0("^deflator_PNADC_", defyear, "_trimestre", defperiod, ".*\\.xls$"), ignore.case=FALSE)
         deffile <- paste0(savedir, "/", defname)
         deffile <- rownames(file.info(deffile)[order(file.info(deffile)$mtime),])[length(deffile)]
@@ -392,6 +487,10 @@ get_pnadc <- function(year, quarter = NULL, interview = NULL, topic = NULL, sele
     else {
       message("Sample design function is unavailable in package PNADcIBGE.")
     }
+  }
+  if (printpath == TRUE) {
+    message("Paths of files downloaded in this function at the save directory provided are:")
+    message(paste0(list.files(path=savedir, pattern="PNADC", full.names=TRUE), collapse="\n"))
   }
   return(data_pnadc)
 }
