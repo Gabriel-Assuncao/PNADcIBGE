@@ -17,6 +17,7 @@ get_pnadc(
   deflator = TRUE,
   design = TRUE,
   reload = TRUE,
+  curlopts = list(),
   savedir = tempdir()
 )
 }
@@ -43,7 +44,9 @@ get_pnadc(
 
 \item{design}{Logical value. If \code{TRUE}, will return an object of class \code{survey.design} or \code{svyrep.design}. It is strongly recommended to keep this parameter as \code{TRUE} for further analysis. If \code{FALSE}, only the microdata will be returned.}
 
-\item{reload}{Logical value. If \code{TRUE}, will re-download the files even if they already exist in the save directory. If \code{FALSE}, will be checked if the files already exist in the save directory and the download will not be performed repeatedly.}
+\item{reload}{Logical value. If \code{TRUE}, will re-download the files even if they already exist in the save directory. If \code{FALSE}, will be checked if the files already exist in the save directory and the download will not be performed repeatedly, be careful with coinciding names of microdata files.}
+
+\item{curlopts}{A named list object identifying the curl options for the handle when using functions from \code{RCurl} package.}
 
 \item{savedir}{Directory to save the downloaded data. Default is to use a temporary directory.}
 }
@@ -60,17 +63,17 @@ For more information, visit the survey official website <\url{https://www.ibge.g
 \donttest{
 pnadc.svy <- get_pnadc(year=2017, quarter=4, selected=FALSE, vars=c("VD4001","VD4002"),
                        defyear=2017, defperiod=4, labels=TRUE, deflator=TRUE, design=TRUE,
-                       reload=TRUE, savedir=tempdir())
+                       reload=TRUE, curlopts=list(), savedir=tempdir())
 # Calculating proportion of employed and unemployed people
 if (!is.null(pnadc.svy)) survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE)
 pnadc.svy2 <- get_pnadc(year=2017, interview=5, selected=FALSE, vars=c("V4112","V4121B"),
                         defyear=2017, defperiod=4, labels=TRUE, deflator=TRUE, design=TRUE,
-                        reload=TRUE, savedir=tempdir())
+                        reload=TRUE, curlopts=list(), savedir=tempdir())
 # Calculating average hours dedicated to the care of people or household chores
 if (!is.null(pnadc.svy2)) survey::svymean(x=~V4121B, design=pnadc.svy2, na.rm=TRUE)
 pnadc.svy3 <- get_pnadc(year=2017, topic=4, selected=FALSE, vars=c("S07006","S07007"),
                         defyear=2017, defperiod=4, labels=TRUE, deflator=TRUE, design=TRUE,
-                        reload=TRUE, savedir=tempdir())
+                        reload=TRUE, curlopts=list(), savedir=tempdir())
 # Calculating proportion of cell phone for personal use with internet access
 if (!is.null(pnadc.svy3)) survey::svymean(x=~S07007, design=pnadc.svy3, na.rm=TRUE)}
 }

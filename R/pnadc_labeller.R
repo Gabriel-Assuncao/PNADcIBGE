@@ -17,7 +17,7 @@
 #' # Downloading data
 #' pnadc.df2 <- get_pnadc(year=2017, quarter=4, selected=FALSE, vars=c("VD4001","VD4002"),
 #'                        defyear=2017, defperiod=4, labels=FALSE, deflator=FALSE, design=FALSE,
-#'                        reload=TRUE, savedir=tempdir())
+#'                        reload=TRUE, curlopts=list(), savedir=tempdir())
 #' dictionary.path2 <- pnadc_example(path="dictionaryexample.xls")
 #' pnadc.df2 <- pnadc_labeller(data_pnadc=pnadc.df2, dictionary.file=dictionary.path2)}
 #' @export
@@ -66,7 +66,7 @@ pnadc_labeller <- function(data_pnadc, dictionary.file) {
     }
   }
   else {
-    message("The microdata object is not of the tibble class or sample design was already defined for microdata, so labeling categorical variables is not possible.")
+    message("The microdata object is not of the tibble class or sample design was already defined for microdata, so labeling categorical variables is not possible.\n")
   }
   return(data_pnadc)
 }

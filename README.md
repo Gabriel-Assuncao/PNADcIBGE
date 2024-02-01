@@ -1,7 +1,7 @@
 # PNADcIBGE
 ## Downloading, Reading and Analyzing PNADC Microdata
 
-This R package provides tools for download, read, and analyze the PNADC	household survey from Brazilian Institute of Geography and Statistics.
+This R package provides tools for download, read, and analyze the Continuous National Household Sample Survey - PNADC from Brazilian Institute of Geography and Statistics - IBGE.
 
 ## Baixe, Leia e Analise os Microdados da PNAD Contínua
 

@@ -19,7 +19,7 @@
 #' # Downloading data
 #' pnadc.df2 <- get_pnadc(year=2017, quarter=4, selected=FALSE, vars=c("VD4001","VD4002"),
 #'                        defyear=2017, defperiod=4, labels=TRUE, deflator=FALSE, design=FALSE,
-#'                        reload=TRUE, savedir=tempdir())
+#'                        reload=TRUE, curlopts=list(), savedir=tempdir())
 #' deflator.path2 <- pnadc_example(path="deflatorexample.xls")
 #' pnadc.df2 <- pnadc_deflator(data_pnadc=pnadc.df2, deflator.file=deflator.path2)}
 #' @export
@@ -51,11 +51,11 @@ pnadc_deflator <- function(data_pnadc, deflator.file) {
       data_pnadc <- tibble::as_tibble(data_pnadc)
     }
     else {
-      message("Merge variables required for adding deflator variables are missing.")
+      message("Merge variables required for adding deflator variables are missing.\n")
     }
   }
   else {
-    message("The microdata object is not of the tibble class or sample design was already defined for microdata, so adding deflator variables is not possible.")
+    message("The microdata object is not of the tibble class or sample design was already defined for microdata, so adding deflator variables is not possible.\n")
   }
   return(data_pnadc)
 }

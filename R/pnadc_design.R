@@ -22,7 +22,7 @@
 #' # Downloading data
 #' pnadc.df2 <- get_pnadc(year=2017, quarter=4, selected=FALSE, vars=c("VD4001","VD4002"),
 #'                        defyear=2017, defperiod=4, labels=TRUE, deflator=TRUE, design=FALSE,
-#'                        reload=TRUE, savedir=tempdir())
+#'                        reload=TRUE, curlopts=list(), savedir=tempdir())
 #' pnadc.svy2 <- pnadc_design(data_pnadc=pnadc.df2)
 #' # Calculating proportion of employed and unemployed people
 #' if (!is.null(pnadc.svy2)) survey::svymean(x=~VD4002, design=pnadc.svy2, na.rm=TRUE)}
@@ -122,12 +122,12 @@ pnadc_design <- function(data_pnadc) {
       }
     }
     else {
-      message("Weight variables required for sample design are missing.")
+      message("Weight variables required for sample design are missing.\n")
       data_posterior <- data_pnadc
     }
   }
   else {
-    message("The microdata object is not of the tibble class or sample design was already defined for microdata, so applying another design is not possible.")
+    message("The microdata object is not of the tibble class or sample design was already defined for microdata, so applying another design is not possible.\n")
     data_posterior <- data_pnadc
   }
   return(data_posterior)

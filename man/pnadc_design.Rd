@@ -35,7 +35,7 @@ if (!is.null(pnadc.svy)) survey::svymean(x=~VD4002, design=pnadc.svy, na.rm=TRUE
 # Downloading data
 pnadc.df2 <- get_pnadc(year=2017, quarter=4, selected=FALSE, vars=c("VD4001","VD4002"),
                        defyear=2017, defperiod=4, labels=TRUE, deflator=TRUE, design=FALSE,
-                       reload=TRUE, savedir=tempdir())
+                       reload=TRUE, curlopts=list(), savedir=tempdir())
 pnadc.svy2 <- pnadc_design(data_pnadc=pnadc.df2)
 # Calculating proportion of employed and unemployed people
 if (!is.null(pnadc.svy2)) survey::svymean(x=~VD4002, design=pnadc.svy2, na.rm=TRUE)}

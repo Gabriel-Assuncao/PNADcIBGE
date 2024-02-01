@@ -33,7 +33,7 @@ pnadc.df <- pnadc_deflator(data_pnadc=pnadc.df, deflator.file=deflator.path)
 # Downloading data
 pnadc.df2 <- get_pnadc(year=2017, quarter=4, selected=FALSE, vars=c("VD4001","VD4002"),
                        defyear=2017, defperiod=4, labels=TRUE, deflator=FALSE, design=FALSE,
-                       reload=TRUE, savedir=tempdir())
+                       reload=TRUE, curlopts=list(), savedir=tempdir())
 deflator.path2 <- pnadc_example(path="deflatorexample.xls")
 pnadc.df2 <- pnadc_deflator(data_pnadc=pnadc.df2, deflator.file=deflator.path2)}
 }
